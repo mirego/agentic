@@ -58,6 +58,21 @@ APM distribue automatiquement les skills (externes et locaux) vers tous les targ
 
 `apm.yml` + `apm.lock.yaml` sont la source de vérité (comme `package.json` + `package-lock.json`). Les fichiers générés dans `.claude/commands/`, `.opencode/commands/` et `.github/prompts/` sont gitignorés et régénérés par `apm install`.
 
+### Conventions de frontmatter
+
+Chaque fichier `.prompt.md` doit inclure un frontmatter YAML. Les champs suivants sont supportés cross-vendor (Claude Code, OpenCode, GitHub Copilot) :
+
+```yaml
+---
+description: Ce que le prompt fait et quand l'utiliser    # recommandé
+argument-hint: [paramètres attendus]                      # optionnel
+model: opus                                               # optionnel — pour les skills complexes
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit        # optionnel
+---
+```
+
+`description` est le minimum — c'est ce que les agents utilisent pour décider quand invoquer automatiquement un skill.
+
 ## Prérequis
 
 - [mise](https://mise.jdx.dev/) pour la gestion des versions d'outils

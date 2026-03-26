@@ -1,3 +1,9 @@
+---
+description: Accompagnement pour adopter APM (Agent Package Manager) dans un projet
+argument-hint: []
+model: opus
+---
+
 # Accompagnement APM
 
 Ce document est conçu pour être fourni à un agent AI (Claude Code, Copilot, OpenCode, etc.) afin d'accompagner l'adoption d'APM dans un projet. Copiez le contenu ci-dessous dans votre agent ou référencez ce fichier directement.
@@ -137,6 +143,13 @@ Si l'utilisateur n'a pas de dépendances externes, un `apm.yml` sans section `de
   ```yaml
   name: <nom-du-skill>
   version: 1.0.0
+  ```
+  Le fichier `.prompt.md` doit inclure un frontmatter avec au minimum `description` :
+  ```yaml
+  ---
+  description: Ce que le skill fait et quand l'utiliser
+  argument-hint: [paramètres attendus]
+  ---
   ```
 - Ajouter le path relatif comme dépendance dans le `apm.yml` du projet :
   ```yaml
