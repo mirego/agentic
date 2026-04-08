@@ -1,0 +1,10 @@
+# Targets minimales requises par le spec-workflow.
+# Intégrer ces targets dans le Makefile du projet.
+
+.PHONY: doctor check
+
+doctor:
+	@bash scripts/doctor.sh
+
+check:
+	@bash scripts/check.sh
