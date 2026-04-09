@@ -82,7 +82,9 @@ Si l'item backlog lié contient `· init:<init-slug>`, mémorise aussi **init_sl
 
 ### 1c. Valider que la spec est mergée
 
-Cherche la PR de spec via la branche `spec/<slug>` :
+**Mode fast-track** : si la branche courante est deja `impl/<slug>` et que `docs/specs/<slug>.md` existe dans les commits de cette branche, on est en mode fast-track (spec + impl sur la meme branche). Sauter cette validation et continuer sans **spec_pr_number**.
+
+**Mode normal** : chercher la PR de spec via la branche `spec/<slug>` :
 
 ```bash
 gh pr list --state merged --head "spec/<slug>" --json number,title,mergedAt --limit 1
@@ -128,20 +130,19 @@ Présente un résumé clair :
 
 ## Phase 2 — Exploration du codebase
 
-Lance 1-3 agents `Explore` en parallèle (via le tool `Task` avec `subagent_type: "Explore"`) basés sur les fichiers et zones identifiés dans la spec. Focus sur :
+Lance **3 agents `Explore` en parallele** (via le tool `Task` avec `subagent_type: "Explore"`), tous dans le meme message pour garantir l'execution simultanee :
 
-- Les fichiers mentionnés dans le plan d'implémentation de la spec
-- Les patterns et conventions existants à réutiliser
-- Le code existant qui sera modifié ou étendu
-- **Les tests existants** : explore le dossier `test/` pour identifier les patterns de test du projet (case modules, fixtures, factories, helpers). Cherche des tests similaires à ce qu'on va implémenter (ex: si on ajoute un contexte, regarde comment les contextes existants sont testés ; si on ajoute un LiveView avec formulaire, regarde comment les LiveViews existants sont testés)
+- **Agent A — Fichiers cibles** : les fichiers mentionnes dans le plan d'implementation de la spec, le code existant qui sera modifie ou etendu, les patterns et conventions a reutiliser
+- **Agent B — Patterns de test** : explore `test/` pour identifier les patterns de test du projet (case modules, fixtures, factories, helpers). Cherche des tests similaires a ce qu'on va implementer (ex: si on ajoute un contexte, regarde comment les contextes existants sont testes)
+- **Agent C — Schemas et donnees** : les schemas, migrations, enums et structures de donnees lies au changement. Verifie la coherence entre la spec et l'etat actuel du code
 
-Présente un résumé des découvertes :
-- Fichiers clés confirmés (existent toujours, cohérents avec la spec)
-- Divergences éventuelles entre la spec et l'état actuel du code
-- Patterns à suivre pour rester cohérent
-- **Patterns de test identifiés** : case modules utilisés, fixtures disponibles, style d'assertions, nouvelles fixtures à créer
+Consolide les resultats des 3 agents et presente un resume :
+- Fichiers cles confirmes (existent toujours, coherents avec la spec)
+- Divergences eventuelles entre la spec et l'etat actuel du code
+- Patterns a suivre pour rester coherent
+- **Patterns de test identifies** : case modules utilises, fixtures disponibles, style d'assertions, nouvelles fixtures a creer
 
-Si des divergences significatives sont trouvées, signale-les au dev et demande comment procéder.
+Si des divergences significatives sont trouvees, signale-les au dev et demande comment proceder.
 
 ---
 
@@ -184,13 +185,13 @@ Pour chaque phase du plan approuvé :
 
 1. Informe l'utilisateur de la phase en cours
 2. Implémente les changements (Write, Edit)
-3. Valide la phase avec `make check` pour couvrir formatage, compilation, tests et vérifications du projet. Si `make check` échoue avec "No rule to make target", le projet n'a pas de target `check` — avertir l'utilisateur et lui demander quelle commande de validation utiliser à la place, puis l'utiliser pour le reste de l'implémentation.
-4. Committe avec un message descriptif :
+3. Committe avec un message descriptif :
    ```bash
    git add <fichiers spécifiques>
    git commit -m "<description de la phase>"
    ```
-5. Passe à la phase suivante
+4. Lance `make check` **en background** (via `run_in_background`) pour valider formatage, compilation et tests sans bloquer le debut de la phase suivante. Si `make check` echoue avec "No rule to make target", le projet n'a pas de target `check` — avertir l'utilisateur et lui demander quelle commande de validation utiliser a la place.
+5. **Avant de commencer la phase suivante**, verifie le resultat de la validation background. Si une regression est detectee, corriger immediatement avant de continuer.
 
 **Phase de tests (obligatoire) :**
 

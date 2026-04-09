@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.0 — 2026-04-07
+## v1.0.0 — 2026-04-09
 
 Première version du package spec-workflow.
 
@@ -10,8 +10,15 @@ Première version du package spec-workflow.
 - `/spec` — Spécification technique avec résolution intelligente d'initiative et formats PRD/RFC/Libre
 - `/impl` — Implémentation guidée par une spec (commits atomiques, tests, archivage, traçabilité)
 
+### Optimisations
+
+- Exploration parallele systematique (3 agents simultanes) dans `/spec` et `/impl`
+- Validation continue en background dans `/impl` (detection precoce des regressions)
+- Mode fast-track pour les specs de type Libre (spec + impl sur une seule branche/PR)
+
 ### Prérequis
 
 - `make doctor` et `make check` comme abstraction tech-agnostique
 - Templates fournis dans `templates/` (doctor.sh, check.sh, Makefile.example)
 - Résilience : les prompts détectent l'absence des targets et ne bloquent pas
+- Backlog conditionnel : `BACKLOG.md` utilise si present, sinon skip

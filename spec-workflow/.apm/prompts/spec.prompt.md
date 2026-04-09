@@ -97,15 +97,16 @@ Si l'objectif identifié en Phase 1 ressemble à une **feature produit** (PRD pr
 
 ## Phase 2 — Codebase Exploration
 
-Lance 1-3 agents `Explore` en parallèle (via le tool `Task` avec `subagent_type: "Explore"`) pour investiguer les parties pertinentes du codebase. Focus sur :
+Lance **3 agents `Explore` en parallele** (via le tool `Task` avec `subagent_type: "Explore"`), tous dans le meme message pour garantir l'execution simultanee :
 
-- Les fichiers et modules directement liés au changement
-- Les patterns et conventions existants à respecter
-- Les dépendances et impacts potentiels
+- **Agent A — Fichiers cibles** : les fichiers et modules directement lies au changement, les dependances et impacts potentiels
+- **Agent B — Patterns de test** : les patterns de test existants pour le domaine touche (fixtures, DataCase, ConnCase, factories, helpers dans `test/`)
+- **Agent C — Schemas et donnees** : les schemas, migrations, enums et structures de donnees existants lies au changement
 
-Présente un résumé concis des découvertes :
-- Fichiers clés identifiés
-- Patterns existants à suivre
+Consolide les resultats des 3 agents et presente un resume concis :
+- Fichiers cles identifies
+- Patterns existants a suivre
+- Patterns de test a reproduire
 - Zones d'impact potentielles
 
 ---
@@ -225,6 +226,26 @@ Points nécessitant discussion pendant la review.
 ### 4d. Review de la spec
 
 Montre à l'utilisateur le contenu complet du document de spec. Utilise `AskUserQuestion` pour demander l'approbation ou des modifications. Itère jusqu'à approbation.
+
+### 4e. Fast-track (specs Libre uniquement)
+
+Si la spec est de type **Libre** (petits changements, ~1-3 fichiers, pas de migration), proposer le mode fast-track via `AskUserQuestion` :
+
+> Spec triviale de type Libre. Enchainer directement avec l'implementation sans PR intermediaire pour la spec ?
+- « Oui, fast-track » — passer en mode fast-track (voir ci-dessous)
+- « Non, PR normale » — continuer vers la Phase 5 standard
+
+**Mode fast-track :**
+1. Creer la branche `impl/<slug>` (pas `spec/<slug>`)
+2. Committer la spec comme premier commit de la branche :
+   ```bash
+   git checkout -b impl/<slug>
+   git add docs/specs/<slug>.md
+   git commit -m "Ajouter spec: <titre>"
+   ```
+3. **Passer directement au skill `/impl`** sur cette meme branche — executer les phases d'implementation a la suite. La spec n'a pas besoin d'etre mergee puisqu'elle sera dans la meme PR.
+4. La PR finale contiendra spec + implementation ensemble.
+5. Sauter les Phases 5 et 6 ci-dessous (pas de PR spec separee, pas de summary spec).
 
 ---
 
