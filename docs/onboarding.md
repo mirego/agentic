@@ -191,14 +191,14 @@ apm_modules/
 
 ### 2g. Ajouter les instructions APM au projet
 
-Copier le fichier [`AGENT-apm.md`](AGENT-apm.md) à la racine du projet. Ce fichier contient les instructions permanentes pour que les agents créent correctement les nouveaux skills via APM.
+Copier le fichier [`AGENT-apm.md`](AGENT-apm.md) dans `.apm-local/AGENTS.md` du projet. Ce fichier contient les instructions permanentes pour que les agents créent correctement les nouveaux prompts via APM.
 
 Ajouter la section suivante dans `AGENTS.md` (et/ou `CLAUDE.md` si c'est un fichier indépendant) :
 
 ```markdown
 ## Agent Skills (APM)
-**CRITIQUE : Ne jamais créer de fichiers de skills/commandes directement dans `.claude/commands/` ou `.github/prompts/`.**
-Tous les skills doivent être créés comme packages APM locaux dans `.apm-local/`. Voir @AGENT-apm.md pour le guide complet.
+**CRITIQUE : Ne jamais créer de fichiers de prompts/commandes directement dans `.claude/commands/` ou `.github/prompts/`.**
+Tous les prompts doivent être créés comme packages APM locaux dans `.apm-local/`. Voir @.apm-local/AGENTS.md pour le guide complet.
 ```
 
 ### 2h. Mettre à jour la documentation
@@ -215,7 +215,7 @@ Avant d'exécuter, présente le plan complet à l'utilisateur avec les actions p
 ```
 Plan d'adoption APM
 
-  Ajouter    : apm.yml, mise.toml (APM), AGENT-apm.md
+  Ajouter    : apm.yml, mise.toml (APM), .apm-local/AGENTS.md
   Modifier   : Makefile, .gitignore, AGENTS.md, [autres fichiers identifiés]
   Supprimer  : [fichiers/scripts obsolètes identifiés]
   Conserver  : [skills locaux identifiés]

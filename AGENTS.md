@@ -15,7 +15,7 @@ mirego-agentic/
 │   └── templates/               # Templates make doctor / make check
 ├── docs/
 │   ├── onboarding.md            # Guide d'accompagnement APM (prompt pour agents)
-│   └── AGENT-apm.md             # Instructions projet pour la création de skills via APM
+│   └── AGENT-apm.md             # Instructions projet pour la création de prompts via APM
 └── [futurs packages]/
 ```
 
