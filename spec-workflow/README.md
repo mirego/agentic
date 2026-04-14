@@ -50,6 +50,19 @@ Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline
 
 ## Prérequis du projet
 
+### Langue
+
+Les prompts génèrent tout le contenu (PR, commits, messages, documents) dans la langue configurée par le projet consommateur. Ajouter une section `## Langue` dans `AGENTS.md` :
+
+```markdown
+## Langue
+- Contenu généré (PR, commits, messages) : français
+```
+
+Si aucune section Langue n'est configurée, les prompts utilisent la langue dans laquelle l'utilisateur communique.
+
+### Makefile
+
 Les prompts s'appuient sur deux targets Makefile pour rester tech-agnostiques :
 
 | Target | Rôle | Utilisé par |

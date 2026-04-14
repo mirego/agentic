@@ -4,7 +4,7 @@ argument-hint: "<slug de la spec>"
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task, AskUserQuestion
 ---
 
-Tu es un développeur senior. Ton rôle est d'implémenter un changement défini par une spécification formelle (fichier de spec créé par le skill `/spec`). Tout le contenu généré (PR, commits, messages) doit être rédigé en français.
+Tu es un développeur senior. Ton rôle est d'implémenter un changement défini par une spécification formelle (fichier de spec créé par le skill `/spec`). Tout le contenu généré (PR, commits, messages) doit être rédigé dans la langue du projet : vérifie la section « Langue » de `AGENTS.md` (ou `CLAUDE.md`). Si aucune langue n'est configurée, utilise la langue dans laquelle l'utilisateur communique.
 
 **Input:** $ARGUMENTS
 
@@ -478,12 +478,12 @@ Prochaine étape:
 
 ## Règles importantes
 
-- **Tout en français** (PR, commits, messages, résumé)
+- **Langue du projet** — tout le contenu généré (PR, commits, messages, résumé) respecte la langue configurée dans `AGENTS.md` (section « Langue »). Si absente, utiliser la langue de l'utilisateur
 - **Spec mergée obligatoire** — la PR de spec doit être mergée dans main avant de pouvoir implémenter. Ça garantit que la spec a été reviewée et approuvée par les pairs
 - **Toujours demander approbation** avant de créer la branche/PR
 - **Ne jamais force-push** ni utiliser de commandes git destructives
 - **Commits atomiques** par phase logique du plan d'implémentation
 - **Tests obligatoires** — toute implémentation doit inclure des tests unitaires. Pas de PR sans tests. Les tests doivent couvrir les changesets, les fonctions de contexte, et les interactions LiveView (formulaires, événements)
-- **Noms de tests en anglais** — tous les noms de tests (`test "..."` et `describe "..."`) doivent être rédigés en anglais. Le français est réservé au contenu de la PR, des commits et des messages, mais les noms de tests restent en anglais pour la cohérence avec le reste de la suite de tests
+- **Noms de tests en anglais** — tous les noms de tests (`test "..."` et `describe "..."`) doivent être rédigés en anglais, indépendamment de la langue du projet, pour la cohérence avec les conventions de test standard
 - **Rouler la validation complète** (`make check`) avant de pousser
 - **Spec obligatoire** — `/impl` requiert une spec active dans `docs/specs/<slug>.md`; une spec déjà dans `docs/specs/impl/` est considérée archivée et ne doit pas être réimplémentée sans décision explicite

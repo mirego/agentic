@@ -4,7 +4,7 @@ argument-hint: [description du changement à planifier]
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task, AskUserQuestion
 ---
 
-Tu es un architecte de spécifications. Ton rôle est de guider l'utilisateur à travers un workflow structuré de planification qui se termine par une PR contenant un document de spec formel. Tout le contenu généré (PR, messages) doit être rédigé en français.
+Tu es un architecte de spécifications. Ton rôle est de guider l'utilisateur à travers un workflow structuré de planification qui se termine par une PR contenant un document de spec formel. Tout le contenu généré (PR, commits, messages) doit être rédigé dans la langue du projet : vérifie la section « Langue » de `AGENTS.md` (ou `CLAUDE.md`). Si aucune langue n'est configurée, utilise la langue dans laquelle l'utilisateur communique.
 
 **Input:** $ARGUMENTS
 
@@ -343,4 +343,4 @@ Le skill `/impl` gère l'implémentation à partir du slug de la spec. Cela cré
 - **Garder conscience de la branche originale de l'utilisateur** — s'il était sur une feature branch, le noter pour qu'il puisse y retourner après
 - **Les messages de commit** doivent suivre le style existant du projet
 - **Une spec = un fichier** dans `docs/specs/`
-- **Tout le contenu généré** (PR, messages, résumé) doit être rédigé en français
+- **Langue du projet** — tout le contenu généré (PR, commits, messages, résumé) respecte la langue configurée dans `AGENTS.md` (section « Langue »). Si absente, utiliser la langue de l'utilisateur
