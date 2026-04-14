@@ -2,7 +2,27 @@
 
 Packages [APM](https://github.com/microsoft/apm) et guides pour standardiser le travail AI chez Mirego. Centralise les skills, commandes et prompts partagés entre projets et les distribue automatiquement vers Claude Code, OpenCode et GitHub Copilot.
 
-## Adopter APM dans un projet
+| Section                                                    | Description                                                 |
+| ---------------------------------------------------------- | ----------------------------------------------------------- |
+| [🚀 Démarrage rapide](#-démarrage-rapide)                 | Configurer le projet en quelques minutes                    |
+| [📦 Adopter APM](#-adopter-apm-dans-un-projet)            | Guide d'intégration APM dans un projet existant             |
+| [🧩 Concepts clés](#-concepts-clés)                       | Packages, conventions et source de vérité                   |
+| [🏷️ Release](#release)                                    | Publier, mettre à jour et stratégies de pinning             |
+
+## 🚀 Démarrage rapide
+
+### Prérequis
+
+- [mise](https://mise.jdx.dev/) pour la gestion des versions d'outils
+- [APM](https://github.com/microsoft/apm) — testé sous `0.8.11`, privilégier la dernière version disponible via `latest`
+
+### Installation
+
+```bash
+make setup
+```
+
+## 📦 Adopter APM dans un projet
 
 Le [guide d'accompagnement](docs/onboarding.md) est conçu pour être fourni à un agent AI. Il analyse le projet, identifie les skills existants, et propose un plan d'adoption adapté.
 
@@ -21,7 +41,7 @@ Le [guide d'accompagnement](docs/onboarding.md) est conçu pour être fourni à 
 - Conversion des skills locaux en packages APM locaux (`.apm-local/`)
 - Configuration `.gitignore` et `CLAUDE.md`
 
-## Concepts clés
+## 🧩 Concepts clés
 
 ### Packages APM externes
 
@@ -136,12 +156,3 @@ APM résout les versions via les refs git. Un tag sur ce repo s'applique à **to
 | Branche | `#main` | Développement — suit les derniers changements |
 | Commit SHA | `#abc123d` | Reproductibilité maximale |
 | Sans ref | (rien) | Résout la branche par défaut au moment de l'install |
-
-## Prérequis
-
-- [mise](https://mise.jdx.dev/) pour la gestion des versions d'outils
-- [APM](https://github.com/microsoft/apm) — testé sous 0.8.5, privilégier la dernière version disponible :
-  ```toml
-  [tools]
-  "github:microsoft/apm" = "latest"
-  ```
