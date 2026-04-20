@@ -6,9 +6,41 @@ Pipeline structuré pour passer d'une vision produit à une implémentation livr
 
 | Commande | Description |
 |----------|-------------|
+| `/spec-workflow` | Dashboard du pipeline : état des initiatives/specs/impls, prochaine action suggérée, routage intelligent |
 | `/initiative` | Créer une initiative produit (vision, personas, user stories, découpage en specs) |
 | `/spec` | Créer une spécification technique (discussion → spec → PR) |
 | `/impl` | Implémenter une spec à partir d'un slug de spec |
+
+### `/spec-workflow`
+
+Orchestrateur du pipeline. Donne une vue d'ensemble de l'état du travail en cours et chaîne vers le bon prompt selon le contexte. Lecture seule — ne crée aucun fichier lui-même.
+
+**Sous-commandes :**
+
+| Commande | Action |
+|----------|--------|
+| `/spec-workflow` ou `/spec-workflow status` | Affiche le dashboard complet du pipeline (initiatives, specs, PRs, statuts) |
+| `/spec-workflow next` | Détermine et propose la prochaine action logique du pipeline |
+| `/spec-workflow start <description>` | Évalue le scope et route vers `/initiative` ou `/spec` |
+| `/spec-workflow impl <slug>` | Raccourci vers `/impl <slug>` avec vérification des prérequis |
+
+**Exemple de dashboard :**
+
+```
+📋 Pipeline Status
+
+Branche courante : feature/refonte-onboarding
+
+Initiative: Refonte onboarding (1/4 specs done)
+├─ ✅ welcome-screen — implémentée (PR #42 merged)
+├─ 🔨 profile-setup — fast-track en cours (PR #51 draft, impl/profile-setup)
+├─ 📝 email-verification — spec PR open (#55) en attente de review
+└─ ⏳ tutorial-tour — pending (pas encore de /spec)
+
+Prochaine action suggérée : /spec-workflow next
+```
+
+Icônes : ⏳ pending · 📝 spec créée · 🔨 impl en cours · ✅ done.
 
 ### `/initiative`
 
@@ -51,6 +83,8 @@ Workflow développeur senior pour implémenter un changement défini par une spe
 Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative.
 
 En mode fast-track, `/spec` enchaîne directement avec `/impl` sur la même branche et produit une seule PR combinée — utile en solo ou quand la spec est suffisamment claire pour ne pas nécessiter de review séparée.
+
+`/spec-workflow` sert de porte d'entrée à tout le pipeline : en cas de doute sur l'état du travail en cours ou sur la prochaine étape, lance `/spec-workflow` pour voir le dashboard ou `/spec-workflow next` pour laisser l'orchestrateur proposer la prochaine action.
 
 ## Prérequis du projet
 
