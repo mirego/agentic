@@ -60,9 +60,9 @@ Pipeline structuré pour passer d'une vision produit à une implémentation livr
 ```
 /initiative "vision"  →  PR d'initiative  →  review/merge
                               │
-                              ├── /spec (spec 1) · init:<slug>
-                              ├── /spec (spec 2) · init:<slug>
-                              └── /spec (spec 3) · init:<slug>
+                              ├── /spec (spec 1)
+                              ├── /spec (spec 2)
+                              └── /spec (spec 3)
                                       │
                                       └── /impl <slug>  →  PR d'impl (draft)
 ```

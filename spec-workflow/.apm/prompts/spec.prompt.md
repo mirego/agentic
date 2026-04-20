@@ -40,7 +40,7 @@ git log --oneline -5
 
 1. Lis `$ARGUMENTS` et tente d'abord une **résolution par initiative existante** avant de poser des questions :
    - Vérifie s'il existe des initiatives actives dans `docs/initiatives/`
-   - Si un fichier `BACKLOG.md` existe, lis-le aussi pour repérer d'éventuels items `· init:<slug> · spec~<slug>` ou `· init:<slug> · spec:<slug>` cohérents avec `$ARGUMENTS`
+   - Si un fichier `BACKLOG.md` existe, lis-le aussi pour repérer d'éventuels items `· spec~<slug>` ou `· spec:<slug>` cohérents avec `$ARGUMENTS` (l'association à une initiative est portée par la section `> init:<slug>` qui les contient)
    - Cherche une correspondance par slug, par titre de spec dans le tableau `## Découpage en specs`, ou par formulation très proche du backlog (si applicable)
    - Si une seule correspondance forte existe, considère cette initiative comme **candidate principale**, lis le document d'initiative, puis réutilise en priorité sa vision, ses personas, ses user stories et la description de la spec concernée pour cadrer l'objectif
    - Si plusieurs correspondances plausibles existent, pose **une seule question de désambiguïsation** via `AskUserQuestion` pour choisir la bonne initiative/spec avant toute autre question métier
@@ -83,7 +83,7 @@ Si l'objectif identifié en Phase 1 ressemble à une **feature produit** (PRD pr
     - Lis le document d'initiative (`docs/initiatives/<init-slug>.md`)
     - Injecte la vision, les personas et les user stories comme contexte pour les phases suivantes
     - Mémorise le slug de l'initiative comme **init_slug** pour la Phase 5
-    - Si un fichier `BACKLOG.md` existe, en Phase 5, après avoir généré le slug de la spec, relis `BACKLOG.md` et repère l'item exact de cette initiative au format `· init:<init-slug> · spec~<slug>`. Mémorise la ligne exacte comme **item backlog lié**; si aucun item correspondant n'est trouvé, continue sans liaison backlog.
+    - Si un fichier `BACKLOG.md` existe, en Phase 5, après avoir généré le slug de la spec, relis `BACKLOG.md` et repère l'item exact de cette initiative au format `· spec~<slug>` **sous la section `> init:<init-slug>`**. Mémorise la ligne exacte comme **item backlog lié**; si aucun item correspondant n'est trouvé, continue sans liaison backlog.
     - En Phase 5, après le commit de la spec, mets à jour le tableau de découpage dans le document d'initiative :
       - Trouve la ligne correspondant à cette spec dans le tableau `## Découpage en specs`
       - Change le statut de `pending` à `spec-created`
@@ -290,13 +290,13 @@ Capturer l'URL de la PR retournée.
 
 **Backlog** — Si un `BACKLOG.md` existe et qu'un `init_slug` a été identifié :
 
-1. Relis `BACKLOG.md` et retrouve l'item backlog de cette initiative contenant `· init:<init-slug> · spec~<slug>`.
+1. Relis `BACKLOG.md` et retrouve l'item backlog de cette initiative contenant `· spec~<slug>` sous la section `> init:<init-slug>`.
 2. Si trouvé, remplace `spec~<slug>` par `spec:<slug>` pour indiquer que la spec existe maintenant.
    ```
    # Avant (posé par /initiative)
-   - [ ] <texte de l'item> · init:<init-slug> · spec~<slug>
+   - [ ] <texte de l'item> · spec~<slug>
    # Après (mis à jour par /spec)
-   - [ ] <texte de l'item> · init:<init-slug> · spec:<slug>
+   - [ ] <texte de l'item> · spec:<slug>
    ```
 3. Si la ligne n'est pas trouvable, continue sans modifier `BACKLOG.md`.
 4. Si `BACKLOG.md` a changé, committer :

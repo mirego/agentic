@@ -78,7 +78,7 @@ Si un fichier `BACKLOG.md` existe, cherche une ligne au format `- [ ] <texte> ·
 - Si plusieurs lignes correspondent, demande à l'utilisateur laquelle est la bonne.
 - Si aucune ligne ne correspond ou si `BACKLOG.md` n'existe pas, continue sans item backlog lié.
 
-Si l'item backlog lié contient `· init:<init-slug>`, mémorise aussi **init_slug** pour la Phase 4.
+Si l'item backlog lié est situé sous une section `> init:<init-slug>`, mémorise aussi **init_slug** pour la Phase 4.
 
 ### 1c. Valider que la spec est mergée
 
@@ -359,7 +359,7 @@ Si la spec implémentée est liée à une initiative (`init_slug` trouvé via le
     - Lis le tableau de découpage complet
     - Si **toutes** les specs ont le statut `done` :
       a. Change le statut de l'initiative dans le header : `Draft` ou `Active` → `Done`
-      b. Si `BACKLOG.md` existe, vérifie qu'aucun item backlog ouvert avec `· init:<init-slug>` ne reste hors de `## Done`. S'il en reste, avertis l'utilisateur qu'il y a un écart de suivi et n'archive pas l'initiative automatiquement.
+      b. Si `BACKLOG.md` existe, vérifie qu'aucun item backlog ouvert sous la section `> init:<init-slug>` ne reste hors de `## Done`. S'il en reste, avertis l'utilisateur qu'il y a un écart de suivi et n'archive pas l'initiative automatiquement.
       c. Déplace le fichier dans l'archive seulement si l'initiative est encore active :
          ```bash
          mkdir -p docs/initiatives/done
