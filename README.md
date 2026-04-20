@@ -67,7 +67,7 @@ Pipeline structuré pour passer d'une vision produit à une implémentation livr
                                       └── /impl <slug>  →  PR d'impl (draft)
 ```
 
-Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative.
+Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative. `/spec` propose aussi un mode **fast-track** qui enchaîne directement avec `/impl` sur une seule PR combinée (recommandé en solo).
 
 Voir le [README du package](spec-workflow/README.md) pour les prérequis, les templates et la documentation complète.
 

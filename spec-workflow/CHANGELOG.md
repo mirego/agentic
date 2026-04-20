@@ -5,6 +5,7 @@
 ### Changements
 
 - Format de tag backlog — les items `/initiative` ne portent plus le tag inline `· init:<slug>` (l'association à l'initiative est déjà assurée par la section `> init:<slug>` qui les contient). Supprime la redondance signalée par Claude bot reviews et aligne `/initiative`, `/spec` et `/impl` sur les trois tags valides définis dans l'onboarding (`> init:<slug>`, `· spec~<slug>`, `· spec:<slug>`).
+- Fast-track généralisé — `/spec` Phase 5 propose maintenant le fast-track (PR combinée spec+impl) pour tous les types de specs (PRD, RFC, Libre), pas seulement Libre. La recommandation est basée sur une heuristique `git log` (contexte solo ou équipe) mais l'utilisateur conserve toujours le choix final. Comportement Libre existant identique.
 
 ## v1.1.0 — 2026-04-13
 

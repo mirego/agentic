@@ -227,37 +227,88 @@ Points nécessitant discussion pendant la review.
 
 Montre à l'utilisateur le contenu complet du document de spec. Utilise `AskUserQuestion` pour demander l'approbation ou des modifications. Itère jusqu'à approbation.
 
-### 4e. Fast-track (specs Libre uniquement)
+---
 
-Si la spec est de type **Libre** (petits changements, ~1-3 fichiers, pas de migration), proposer le mode fast-track via `AskUserQuestion` :
+## Phase 5 — Intégration
 
-> Spec triviale de type Libre. Enchainer directement avec l'implementation sans PR intermediaire pour la spec ?
-- « Oui, fast-track » — passer en mode fast-track (voir ci-dessous)
-- « Non, PR normale » — continuer vers la Phase 5 standard
+### 5.0 Choisir le mode d'intégration
 
-**Mode fast-track :**
-1. Creer la branche `impl/<slug>` (pas `spec/<slug>`)
-2. Committer la spec comme premier commit de la branche :
-   ```bash
-   git checkout -b impl/<slug>
-   git add docs/specs/<slug>.md
-   git commit -m "Ajouter spec: <titre>"
-   ```
-3. **Passer directement au skill `/impl`** sur cette meme branche — executer les phases d'implementation a la suite. La spec n'a pas besoin d'etre mergee puisqu'elle sera dans la meme PR.
-4. La PR finale contiendra spec + implementation ensemble.
-5. Sauter les Phases 5 et 6 ci-dessous (pas de PR spec separee, pas de summary spec).
+Détecter le contexte de travail via `git log` :
+
+```bash
+git log --format='%ae' -50 | sort -u | wc -l
+```
+
+- Résultat `1` → contexte **solo**, fast-track recommandé
+- Résultat `>1` → contexte **équipe**, PR séparée recommandée
+- Échec (repo vide, pas de commits) → traiter comme **équipe** (fallback conservateur)
+
+Puis poser la question via `AskUserQuestion` :
+
+> Comment intégrer cette spec ?
+- « Fast-track — PR combinée spec+impl » — une seule PR contient la spec et son implémentation. Pas de cycle de review intermédiaire. Idéal en solo ou quand la spec est suffisamment claire pour enchaîner directement. Ajouter « (Recommandé) » au label si le contexte détecté est **solo**.
+- « PR séparée pour la spec » — la spec est mergée d'abord (review dédiée), puis `/impl` démarre sur une deuxième branche avec sa propre PR. Flow classique, utile quand la spec mérite un round de review avant l'investissement d'implémentation. Ajouter « (Recommandé) » au label si le contexte détecté est **équipe**.
+
+L'option recommandée doit apparaître en première position.
+
+Si l'utilisateur répond « Other » avec un texte libre, re-poser la question en demandant explicitement une des deux options.
+
+Router selon la réponse :
+- **Fast-track** → continuer avec la sous-section 5A ci-dessous, puis sauter directement à la fin du prompt (Phase 6 skippée, le summary sera produit par `/impl`).
+- **PR séparée** → continuer avec la sous-section 5B ci-dessous, puis Phase 6.
 
 ---
 
-## Phase 5 — GitHub Integration
+### 5A Chemin fast-track (PR combinée)
 
-### 5a. Créer les labels (idempotent)
+1. **Créer la branche d'implémentation** :
+   ```bash
+   git checkout -b impl/<slug>
+   ```
+   Si `git checkout -b` échoue parce que la branche existe déjà, proposer à l'utilisateur : `git checkout impl/<slug>` pour reprendre le travail, ou choisir un nom alternatif.
+
+2. **Committer la spec comme premier commit de la branche** :
+   ```bash
+   git add docs/specs/<slug>.md
+   git commit -m "Ajouter spec: <titre>"
+   ```
+
+3. **Si un `BACKLOG.md` existe et qu'un `init_slug` a été identifié** en Phase 1.5 :
+   - Relis `BACKLOG.md` et retrouve l'item au format `· spec~<slug>` situé sous la section `> init:<init-slug>`.
+   - Si trouvé, remplace `spec~<slug>` par `spec:<slug>` (transition attendue par `/impl` Phase 1b).
+   - Committer :
+     ```bash
+     git add BACKLOG.md
+     git commit -m "Lier item backlog · spec:<slug>"
+     ```
+   - Si la ligne n'est pas trouvable, continuer sans modifier `BACKLOG.md`.
+
+   Si `BACKLOG.md` n'existe pas ou qu'aucun `init_slug` n'a été identifié, passer silencieusement.
+
+4. **Si une initiative est liée**, mets à jour son tableau de découpage dans `docs/initiatives/<init-slug>.md` :
+   - Trouve la ligne de cette spec dans le tableau `## Découpage en specs`
+   - Change le statut de `pending` à `spec-created`
+   - Committer :
+     ```bash
+     git add docs/initiatives/<init-slug>.md
+     git commit -m "Mettre à jour initiative: spec créée pour <slug>"
+     ```
+
+5. **Passer directement au skill `/impl`** sur cette même branche. Exécuter les phases de `/impl` à la suite. La spec n'a pas besoin d'être mergée puisqu'elle sera dans la même PR.
+
+6. **Sauter la Phase 6 ci-dessous** (pas de summary `/spec` — c'est `/impl` Phase 6 qui produit le summary final de la PR combinée).
+
+---
+
+### 5B Chemin PR séparée (flow classique)
+
+#### 5B.a. Créer les labels (idempotent)
 
 ```bash
 gh label create "spec" --description "Specification document" --color "5319e7" --force
 ```
 
-### 5b. Créer la branche, commit et push
+#### 5B.b. Créer la branche, commit et push
 
 ```bash
 git checkout -b spec/<slug>
@@ -266,7 +317,7 @@ git commit -m "Ajouter spec: <titre>"
 git push -u origin spec/<slug>
 ```
 
-### 5c. Créer la Pull Request
+#### 5B.c. Créer la Pull Request
 
 ```bash
 gh pr create \
@@ -286,7 +337,7 @@ EOF
 
 Capturer l'URL de la PR retournée.
 
-### 5d. Mettre à jour le backlog et l'initiative (conditionnel)
+#### 5B.d. Mettre à jour le backlog et l'initiative (conditionnel)
 
 **Backlog** — Si un `BACKLOG.md` existe et qu'un `init_slug` a été identifié :
 
@@ -312,11 +363,17 @@ Si `BACKLOG.md` n'existe pas, passer cette sous-étape silencieusement.
    git add docs/initiatives/<init-slug>.md
    git commit -m "Mettre à jour initiative: spec créée pour <slug>"
    ```
-6. Pousser les commits restants.
+
+Pousser les commits restants :
+```bash
+git push
+```
 
 ---
 
 ## Phase 6 — Summary
+
+> **Note :** cette phase ne s'exécute qu'en chemin 5B (PR séparée). En chemin 5A (fast-track), c'est `/impl` qui produit le summary final de la PR combinée.
 
 Présente un résumé clair :
 

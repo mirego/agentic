@@ -22,13 +22,15 @@ Workflow Product Owner pour créer une initiative — une unité de planificatio
 
 Workflow architecte pour planifier un changement et produire une spécification formelle (PRD, RFC ou Libre).
 
-**Phases :** Vérification de l'environnement → Discovery (avec résolution intelligente d'initiative) → Exploration du codebase → Design itératif → Rédaction du document → GitHub
+**Phases :** Vérification de l'environnement → Discovery (avec résolution intelligente d'initiative) → Exploration du codebase → Design itératif → Rédaction du document → Intégration
 
-**Produit :** `docs/specs/<slug>.md` + PR
+**Produit :** `docs/specs/<slug>.md` + PR — soit séparée (flow classique, review dédiée de la spec), soit combinée avec `/impl` en mode **fast-track** (une seule PR contenant spec et impl).
+
+À la phase d'intégration, `/spec` détecte le contexte (solo vs équipe, via `git log`) et propose le mode approprié; l'utilisateur garde toujours le choix final.
 
 ### `/impl`
 
-Workflow développeur senior pour implémenter un changement défini par une spec. Vérifie que la PR de spec est mergée avant de démarrer.
+Workflow développeur senior pour implémenter un changement défini par une spec. Vérifie que la PR de spec est mergée avant de démarrer (sauf en mode fast-track, où spec et impl partagent la même branche).
 
 **Phases :** Vérification de l'environnement → Chargement du contexte → Exploration du codebase → Plan d'exécution → Implémentation (commits atomiques + tests) → GitHub
 
@@ -47,6 +49,8 @@ Workflow développeur senior pour implémenter un changement défini par une spe
 ```
 
 Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative.
+
+En mode fast-track, `/spec` enchaîne directement avec `/impl` sur la même branche et produit une seule PR combinée — utile en solo ou quand la spec est suffisamment claire pour ne pas nécessiter de review séparée.
 
 ## Prérequis du projet
 
