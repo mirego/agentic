@@ -39,9 +39,9 @@ Workflow développeur senior pour implémenter un changement défini par une spe
 ```
 /initiative "vision"  →  PR d'initiative  →  review/merge
                               │
-                              ├── /spec (spec 1) · init:<slug>
-                              ├── /spec (spec 2) · init:<slug>
-                              └── /spec (spec 3) · init:<slug>
+                              ├── /spec (spec 1)
+                              ├── /spec (spec 2)
+                              └── /spec (spec 3)
                                       │
                                       └── /impl <slug>  →  PR d'impl (draft)
 ```

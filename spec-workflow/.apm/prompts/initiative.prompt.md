@@ -201,16 +201,16 @@ Vérifie si un fichier `BACKLOG.md` existe à la racine du projet.
 **Si `BACKLOG.md` existe** :
 
 1. Lis `BACKLOG.md`
-2. Crée une **section thématique** pour l'initiative. Chaque item porte **deux tags** : le tag initiative ET le tag spec (avec tilde `~` pour indiquer une spec planifiée) :
+2. Crée une **section thématique** pour l'initiative. L'association à l'initiative est établie par la section (`> init:<slug-initiative>`), chaque item porte uniquement le tag spec (avec tilde `~` pour indiquer une spec planifiée) :
    ```markdown
    ## [Titre de l'initiative]
    > init:<slug-initiative>
 
-   - [ ] [Spec 1 : description courte] · init:<slug-initiative> · spec~<slug-spec-1>
-   - [ ] [Spec 2 : description courte] · init:<slug-initiative> · spec~<slug-spec-2>
-   - [ ] [Spec 3 : description courte] · init:<slug-initiative> · spec~<slug-spec-3>
+   - [ ] [Spec 1 : description courte] · spec~<slug-spec-1>
+   - [ ] [Spec 2 : description courte] · spec~<slug-spec-2>
+   - [ ] [Spec 3 : description courte] · spec~<slug-spec-3>
    ```
-   - Le tag `init:<slug>` lie l'item à l'initiative parente
+   - Le tag de section `> init:<slug>` lie tous les items de la section à l'initiative parente
    - Le tag `spec~<slug>` (avec tilde) indique une spec **planifiée mais pas encore créée**
    - Quand `/spec` créera la spec, le tilde sera mis à jour en deux-points : `spec:<slug>`
    - **IMPORTANT** : le `<slug-spec>` de chaque item doit correspondre au slug de la spec dans le tableau de découpage, PAS au slug de l'initiative
@@ -221,7 +221,7 @@ Vérifie si un fichier `BACKLOG.md` existe à la racine du projet.
    - Vérifie qu'aucun item backlog identique `· spec~<slug-spec>` n'existe déjà ailleurs dans `BACKLOG.md`
 5. **Vérifications obligatoires après écriture** :
    - Le nombre d'items backlog créés doit être égal au nombre de specs du tableau `## Découpage en specs`
-   - Chaque item backlog doit contenir à la fois `· init:<slug-initiative>` et `· spec~<slug-spec>`
+   - Chaque item backlog doit contenir le tag `· spec~<slug-spec>` (l'association à l'initiative passe par la section `> init:<slug-initiative>`)
    - La section initiative doit apparaître une seule fois dans `BACKLOG.md`
 
 ### 6b. Vérifier les prérequis GitHub

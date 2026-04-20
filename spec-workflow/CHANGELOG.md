@@ -1,5 +1,11 @@
 # Changelog
 
+## À venir
+
+### Changements
+
+- Format de tag backlog — les items `/initiative` ne portent plus le tag inline `· init:<slug>` (l'association à l'initiative est déjà assurée par la section `> init:<slug>` qui les contient). Supprime la redondance signalée par Claude bot reviews et aligne `/initiative`, `/spec` et `/impl` sur les trois tags valides définis dans l'onboarding (`> init:<slug>`, `· spec~<slug>`, `· spec:<slug>`).
+
 ## v1.1.0 — 2026-04-13
 
 ### Changements
