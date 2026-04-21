@@ -6,9 +6,49 @@ Pipeline structuré pour passer d'une vision produit à une implémentation livr
 
 | Commande | Description |
 |----------|-------------|
+| `/spec-workflow` | Dashboard du pipeline : état des initiatives/specs/impls, prochaine action suggérée, routage intelligent |
 | `/initiative` | Créer une initiative produit (vision, personas, user stories, découpage en specs) |
 | `/spec` | Créer une spécification technique (discussion → spec → PR) |
 | `/impl` | Implémenter une spec à partir d'un slug de spec |
+
+### `/spec-workflow`
+
+Orchestrateur du pipeline. Donne une vue d'ensemble de l'état du travail en cours et chaîne vers le bon prompt selon le contexte. Lecture seule — ne crée aucun fichier lui-même.
+
+**Sous-commandes :**
+
+| Commande | Action |
+|----------|--------|
+| `/spec-workflow` ou `/spec-workflow status` | Affiche le dashboard complet du pipeline (initiatives, specs, PRs, statuts) |
+| `/spec-workflow next` | Détermine et propose la prochaine action logique du pipeline |
+| `/spec-workflow start <description>` | Évalue le scope et route vers `/initiative` ou `/spec` |
+| `/spec-workflow impl <slug>` | Raccourci vers `/impl <slug>` avec vérification des prérequis |
+
+**Exemple de dashboard :**
+
+```
+📋 Pipeline Status
+
+Branche courante : feature/refonte-onboarding
+
+Initiative: Refonte onboarding (1/4 specs done)
+├─ ✅ welcome-screen — implémentée (PR #42 merged)
+├─ 🔨 profile-setup — impl en cours (PR impl #51 draft)
+├─ 📬 email-verification — prête pour /impl (PR spec #55 merged)
+├─ 📄 tutorial-tour — spec locale non pushée
+└─ ⏳ permissions-onboarding — pending
+
+**Prochaine action suggérée :** reprendre l'impl `profile-setup` (PR #51 draft)
+
+Autres options :
+- Lancer /impl email-verification (spec mergée, prête)
+- Pousser la spec tutorial-tour vers une PR
+- Créer la spec pending permissions-onboarding
+```
+
+Icônes : ⏳ pending · 📄 spec locale · 📝 spec en review · 📬 prête pour /impl · 🔨 impl en cours · ✅ done.
+
+Principe directeur du `next` : **finir avant de commencer** — les fast-tracks en draft ont priorité sur le démarrage d'une nouvelle impl. Les états passifs (📝, PR impl en review) apparaissent en options secondaires, jamais en recommandation principale.
 
 ### `/initiative`
 
@@ -51,6 +91,8 @@ Workflow développeur senior pour implémenter un changement défini par une spe
 Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative.
 
 En mode fast-track, `/spec` enchaîne directement avec `/impl` sur la même branche et produit une seule PR combinée — utile en solo ou quand la spec est suffisamment claire pour ne pas nécessiter de review séparée.
+
+`/spec-workflow` sert de porte d'entrée à tout le pipeline : en cas de doute sur l'état du travail en cours ou sur la prochaine étape, lance `/spec-workflow` pour voir le dashboard ou `/spec-workflow next` pour laisser l'orchestrateur proposer la prochaine action.
 
 ## Prérequis du projet
 

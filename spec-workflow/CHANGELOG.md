@@ -2,6 +2,10 @@
 
 ## À venir
 
+### Ajouts
+
+- Prompt `/spec-workflow` — orchestrateur lecture seule du pipeline. Quatre sous-commandes : `status` (dashboard avec 6 icônes d'état ⏳📄📝📬🔨✅), `next` (propose la prochaine action logique selon le principe « finir avant de commencer »), `start <description>` (route vers `/initiative` ou `/spec` selon le scope), `impl <slug>` (raccourci vers `/impl` avec vérification des prérequis GitHub). Dashboard formate la sortie avec une recommandation principale en gras et des options secondaires. Regroupe les specs consécutives de même état (`pending`, `done`) pour alléger la lecture des initiatives longues. Priorise les specs pending débloquées (dépendances satisfaites) et mentionne l'effet « débloque N autre(s) » dans les suggestions. Ne crée aucun fichier — délègue toujours aux prompts dédiés après confirmation via `AskUserQuestion`.
+
 ### Changements
 
 - Format de tag backlog — les items `/initiative` ne portent plus le tag inline `· init:<slug>` (l'association à l'initiative est déjà assurée par la section `> init:<slug>` qui les contient). Supprime la redondance signalée par Claude bot reviews et aligne `/initiative`, `/spec` et `/impl` sur les trois tags valides définis dans l'onboarding (`> init:<slug>`, `· spec~<slug>`, `· spec:<slug>`).

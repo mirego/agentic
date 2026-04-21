@@ -39,7 +39,7 @@ Le [guide d'accompagnement](docs/onboarding.md) est conçu pour être fourni à 
 - Intégration dans le setup existant (`Makefile`, scripts)
 - Migration des skills existants (comparaison, coexistence)
 - Conversion des skills locaux en packages APM locaux (`.apm-local/`)
-- Configuration `.gitignore` et `CLAUDE.md`
+- Configuration `.gitignore` et fichiers d'instructions agent
 
 ## 🧩 Concepts clés
 
@@ -53,11 +53,15 @@ Pipeline structuré pour passer d'une vision produit à une implémentation livr
 
 | Commande | Description |
 |----------|-------------|
+| `/spec-workflow` | Dashboard du pipeline : état, prochaine action, routage intelligent |
 | `/initiative` | Créer une initiative produit (vision, personas, user stories, découpage en specs) |
 | `/spec` | Créer une spécification technique (discussion → spec → PR) |
 | `/impl` | Implémenter une spec à partir d'un slug de spec |
 
 ```
+/spec-workflow  ←  porte d'entrée : dashboard + routage
+       │
+       ▼
 /initiative "vision"  →  PR d'initiative  →  review/merge
                               │
                               ├── /spec (spec 1)
@@ -66,6 +70,8 @@ Pipeline structuré pour passer d'une vision produit à une implémentation livr
                                       │
                                       └── /impl <slug>  →  PR d'impl (draft)
 ```
+
+`/spec-workflow` est la porte d'entrée du pipeline : `status` pour voir l'état, `next` pour la prochaine action suggérée, `start <desc>` pour router vers le bon prompt selon le scope.
 
 Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative. `/spec` propose aussi un mode **fast-track** qui enchaîne directement avec `/impl` sur une seule PR combinée (recommandé en solo).
 

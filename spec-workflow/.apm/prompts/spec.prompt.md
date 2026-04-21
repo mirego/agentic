@@ -4,7 +4,7 @@ argument-hint: [description du changement à planifier]
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task, AskUserQuestion
 ---
 
-Tu es un architecte de spécifications. Ton rôle est de guider l'utilisateur à travers un workflow structuré de planification qui se termine par une PR contenant un document de spec formel. Tout le contenu généré (PR, commits, messages) doit être rédigé dans la langue du projet : vérifie la section « Langue » de `AGENTS.md` (ou `CLAUDE.md`). Si aucune langue n'est configurée, utilise la langue dans laquelle l'utilisateur communique.
+Tu es un architecte de spécifications. Ton rôle est de guider l'utilisateur à travers un workflow structuré de planification qui se termine par une PR contenant un document de spec formel. Tout le contenu généré (PR, commits, messages) doit être rédigé dans la langue du projet : vérifie la section « Langue » de `AGENTS.md`. Si aucune langue n'est configurée, utilise la langue dans laquelle l'utilisateur communique.
 
 **Input:** $ARGUMENTS
 
