@@ -1,17 +1,17 @@
 # Changelog
 
-## À venir
+## v1.2.0 — 2026-04-21
 
 ### Ajouts
 
-- Extensions projet via événements de cycle de vie — les trois prompts core exposent maintenant huit points d'encrage (`spec-workflow:initiative:started/created/completed`, `spec-workflow:spec:started/created/completed`, `spec-workflow:impl:started/completed`) que les projets consommateurs peuvent brancher en déclarant une section homonyme dans leur `AGENTS.md`. Le matching se fait par chaîne exacte quel que soit le niveau de heading. Les extensions sont optionnelles et non bloquantes — elles permettent de brancher un tracker externe (Jira, Linear), un miroir documentaire (Notion, Confluence), des notifications (Slack) ou du CI sans coupler le package à un vendor. Voir le [README](README.md#intégrations-externes) pour la liste des événements, les règles et un exemple Jira.
-- Progression visible dans `/impl` — Phase 3 matérialise le plan approuvé en tâches via `TaskCreate` (une tâche par phase d'implémentation + Tests + Validation et archivage + Ouvrir la PR), liées entre elles par `blocked_by` pour refléter la dépendance séquentielle des commits atomiques. `TaskUpdate` bascule chaque tâche en `in_progress` au début de la phase et `completed` après le commit et la validation background — jamais en batch à la fin.
-- Prompt `/spec-workflow` — orchestrateur lecture seule du pipeline. Quatre sous-commandes : `status` (dashboard avec 6 icônes d'état ⏳📄📝📬🔨✅), `next` (propose la prochaine action logique selon le principe « finir avant de commencer »), `start <description>` (route vers `/initiative` ou `/spec` selon le scope), `impl <slug>` (raccourci vers `/impl` avec vérification des prérequis GitHub). Dashboard formate la sortie avec une recommandation principale en gras et des options secondaires. Regroupe les specs consécutives de même état (`pending`, `done`) pour alléger la lecture des initiatives longues. Priorise les specs pending débloquées (dépendances satisfaites) et mentionne l'effet « débloque N autre(s) » dans les suggestions. Ne crée aucun fichier — délègue toujours aux prompts dédiés après confirmation via `AskUserQuestion`.
+- Extensions projet via événements de cycle de vie — huit hooks (`initiative:started/created/completed`, `spec:started/created/completed`, `impl:started/completed`) branchables depuis une section homonyme dans `AGENTS.md`. Voir [README](README.md#intégrations-externes).
+- Progression visible dans `/impl` — Phase 3 matérialise le plan en tâches via `TaskCreate`/`TaskUpdate`, une par phase + Tests + PR.
+- Prompt `/spec-workflow` — orchestrateur lecture seule : `status`, `next`, `start <desc>`, `impl <slug>`.
 
 ### Changements
 
-- Format de tag backlog — les items `/initiative` ne portent plus le tag inline `· init:<slug>` (l'association à l'initiative est déjà assurée par la section `> init:<slug>` qui les contient). Supprime la redondance signalée par Claude bot reviews et aligne `/initiative`, `/spec` et `/impl` sur les trois tags valides définis dans l'onboarding (`> init:<slug>`, `· spec~<slug>`, `· spec:<slug>`).
-- Fast-track généralisé — `/spec` Phase 5 propose maintenant le fast-track (PR combinée spec+impl) pour tous les types de specs (PRD, RFC, Libre), pas seulement Libre. La recommandation est basée sur une heuristique `git log` (contexte solo ou équipe) mais l'utilisateur conserve toujours le choix final. Comportement Libre existant identique.
+- Format de tag backlog — retrait du tag inline `· init:<slug>`, redondant avec la section `> init:<slug>`.
+- Fast-track généralisé — `/spec` Phase 5 propose la PR combinée spec+impl pour tous les types (PRD, RFC, Libre).
 
 ## v1.1.0 — 2026-04-13
 
