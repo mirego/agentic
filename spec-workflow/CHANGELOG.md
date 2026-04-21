@@ -4,7 +4,7 @@
 
 ### Ajouts
 
-- Prompt `/spec-workflow` — orchestrateur lecture seule du pipeline. Quatre sous-commandes : `status` (dashboard de l'état des initiatives/specs/impls avec icônes ⏳📝🔨✅), `next` (propose la prochaine action logique), `start <description>` (route vers `/initiative` ou `/spec` selon le scope), `impl <slug>` (raccourci vers `/impl` avec vérification des prérequis GitHub). Ne crée aucun fichier — délègue toujours aux prompts dédiés après confirmation via `AskUserQuestion`.
+- Prompt `/spec-workflow` — orchestrateur lecture seule du pipeline. Quatre sous-commandes : `status` (dashboard avec 6 icônes d'état ⏳📄📝📬🔨✅), `next` (propose la prochaine action logique selon le principe « finir avant de commencer »), `start <description>` (route vers `/initiative` ou `/spec` selon le scope), `impl <slug>` (raccourci vers `/impl` avec vérification des prérequis GitHub). Dashboard formate la sortie avec une recommandation principale en gras et des options secondaires. Regroupe les specs consécutives de même état (`pending`, `done`) pour alléger la lecture des initiatives longues. Ne crée aucun fichier — délègue toujours aux prompts dédiés après confirmation via `AskUserQuestion`.
 
 ### Changements
 

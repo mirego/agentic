@@ -54,10 +54,10 @@ Si `gh` n'est pas disponible ou pas authentifié, continue sans les infos de PR 
 
 - Cherche une PR avec `headRefName == "spec/<slug>"` ou `"impl/<slug>"`
 - Détermine l'état de la spec :
-  - **PR `impl/<slug>` ouverte avec la spec commitée dedans** → fast-track en cours
-  - **PR `spec/<slug>` merged** (ou aucune PR spec trouvée et branche `impl/<slug>` absente) → prête pour `/impl`
-  - **PR `spec/<slug>` ouverte** → en attente de review
-  - **Aucune PR, pas de branche** → spec locale non pushée
+  - **PR `impl/<slug>` ouverte ou draft** → 🔨 impl en cours (couvre aussi le fast-track, où la spec est commitée dans la branche `impl/<slug>`)
+  - **PR `spec/<slug>` mergée et aucune branche `impl/<slug>` active** → 📬 prête pour `/impl`
+  - **PR `spec/<slug>` ouverte** → 📝 spec en review
+  - **Fichier spec existe, aucune PR, aucune branche** → 📄 spec locale non pushée
 
 **Pour chaque spec archivée** (`docs/specs/impl/<slug>.md`) :
 
@@ -75,26 +75,36 @@ Format :
 Branche courante : <branche>
 
 Initiative: <titre> (<X>/<Y> specs done)
-├─ ✅ <slug-1> — implémentée (PR #<n> merged)
-├─ 🔨 <slug-2> — fast-track en cours (PR #<n> draft, impl/<slug-2>)
-├─ 📝 <slug-3> — spec PR open (#<n>) en attente de review
-└─ ⏳ <slug-4> — pending (pas encore de /spec)
+├─ ✅ <slug-1>, <slug-2>, <slug-3> — implémentées
+├─ 🔨 <slug-4> — impl en cours (PR impl #<n> draft)
+├─ 📬 <slug-5> — prête pour /impl (PR spec #<n> merged)
+├─ 📝 <slug-6> — spec en review (PR #<n> open)
+├─ 📄 <slug-7> — spec locale non pushée
+└─ ⏳ <slug-8>, <slug-9> — pending
 
 Specs indépendantes:
-├─ 🔨 <slug-5> — prête pour /impl (PR spec #<n> merged)
-└─ 📝 <slug-6> — spec PR open (#<n>)
+├─ 🔨 <slug-a> — impl en cours (PR impl #<n> draft)
+└─ 📬 <slug-b> — prête pour /impl (PR spec #<n> merged)
 
-Archives (docs/specs/impl/): <N> specs implémentées
-
-Prochaine action suggérée : /spec-workflow next
+Archives : <N> initiatives · <M> specs implémentées
 ```
 
 Icônes à utiliser :
 
-- ⏳ pending (spec listée dans le tableau de découpage mais pas encore créée)
-- 📝 spec-created (spec rédigée, PR spec open ou mergée mais pas encore implémentée)
-- 🔨 impl en cours (PR impl draft ou fast-track en cours)
-- ✅ done (archivée dans `docs/specs/impl/`)
+- ⏳ **pending** — spec listée dans le tableau de découpage, aucun fichier `docs/specs/<slug>.md`
+- 📄 **spec locale** — fichier `docs/specs/<slug>.md` existe, aucune PR ni branche pushée
+- 📝 **spec en review** — PR `spec/<slug>` ouverte, attend review
+- 📬 **prête pour /impl** — PR `spec/<slug>` mergée, aucune branche `impl/<slug>` active
+- 🔨 **impl en cours** — PR `impl/<slug>` ouverte/draft (couvre aussi le fast-track)
+- ✅ **done** — spec archivée dans `docs/specs/impl/<slug>.md`
+
+**Rollup des états identiques** : pour alléger la lecture d'une initiative avec beaucoup de specs, regrouper sur une seule ligne les specs consécutives du tableau de découpage qui partagent exactement le même état **sans action individuelle requise** — typiquement ⏳ `pending` et ✅ `done`.
+
+Deux notations acceptées :
+- Liste : `<slug-a>, <slug-b>, <slug-c> — <description>`
+- Plage contiguë du tableau : `<slug-premier> → <slug-dernier> (specs N-M) — <description>`
+
+Ne **jamais** regrouper les états qui demandent une décision (📄, 📝, 📬, 🔨) — garder une ligne par spec pour préserver la lisibilité des actions.
 
 Notes d'affichage :
 
@@ -104,29 +114,47 @@ Notes d'affichage :
 
 ### 4. Suggérer la prochaine action
 
-Termine toujours le dashboard par une ligne `Prochaine action suggérée : ...` qui applique la logique de la section **Prochaine action** ci-dessous (sans exécuter le chaînage — c'est au dashboard de le laisser au suivant).
+Termine le dashboard par une recommandation **priorisée** suivie d'options secondaires actionnables. Format :
+
+```
+
+**Prochaine action suggérée :** <une seule action précise, en gras, appliquant la priorité définie ci-dessous>
+
+Autres options :
+- <alternative 1>
+- <alternative 2>
+- ...
+```
+
+Règles :
+
+- La recommandation principale applique strictement la priorité de la section **Prochaine action** (première règle qui matche gagne)
+- Les options secondaires listent les autres actions actionnables : fast-tracks non retenus, specs 📬 non prioritaires, specs 📄 à pousser, specs ⏳ d'autres initiatives à créer
+- Les états passifs (📝 spec en review, 🔨 PR impl en review) apparaissent en options secondaires comme « suivre la review de PR #<n> », jamais en recommandation principale
+- Maximum 5 options secondaires pour garder le dashboard lisible
+- Le dashboard est **passif** — ne pas exécuter `AskUserQuestion` ici. Le chaînage n'est déclenché que par `/spec-workflow next` ou par une demande explicite de l'utilisateur
 
 ---
 
 ## Section Prochaine action (next)
 
-Détermine la prochaine étape logique selon cette priorité (première qui matche gagne) :
+Détermine la prochaine étape logique selon cette priorité (première qui matche gagne). Le principe directeur : **finir avant de commencer** — une impl en cours a préséance sur un nouveau chantier.
 
-1. **Spec prête à implémenter** : une spec dans `docs/specs/<slug>.md` dont la PR spec est mergée et sans branche `impl/<slug>` active
+1. **Fast-track à reprendre** (🔨 draft) : une branche `impl/<slug>` existe avec la spec commitée mais l'implémentation incomplète (PR draft ou absente de GitHub)
+   → proposer de reprendre `/impl <slug>` avec `AskUserQuestion` :
+   > Fast-track en cours sur `<slug>`. Reprendre l'implémentation ?
+
+2. **Spec prête à implémenter** (📬) : une spec dans `docs/specs/<slug>.md` dont la PR spec est mergée, aucune branche `impl/<slug>` active
    → proposer `/impl <slug>` avec `AskUserQuestion` :
    > La spec `<slug>` est mergée et prête à implémenter. Lancer `/impl <slug>` ?
    - « Oui, lancer /impl » — chaîner vers `/impl <slug>`
    - « Plus tard » — stopper
 
-2. **Fast-track à reprendre** : une branche `impl/<slug>` existe avec la spec déjà commitée mais l'implémentation incomplète (PR draft ou absente)
-   → proposer de reprendre `/impl <slug>` :
-   > Fast-track en cours sur `<slug>`. Reprendre l'implémentation ?
+3. **Spec locale non pushée** (📄) : fichier `docs/specs/<slug>.md` existe mais aucune PR ni branche
+   → proposer de finaliser :
+   > La spec `<slug>` est rédigée localement mais jamais pushée. Pousser vers une PR spec, ou démarrer `/impl` en local ?
 
-3. **Spec en attente de review** : PR `spec/<slug>` ouverte
-   → informer sans chaîner :
-   > La spec `<slug>` attend la review de la PR #<n>. Rien à chaîner ici.
-
-4. **Spec à créer depuis une initiative** : initiative active avec au moins une ligne `pending` dans le tableau de découpage
+4. **Spec à créer depuis une initiative** (⏳ pending) : initiative active avec au moins une ligne `pending` dans le tableau de découpage
    → proposer `/spec` avec le contexte de l'initiative :
    > Initiative `<init-slug>` a des specs pending. Lancer `/spec "<description de la prochaine spec pending>"` ?
    - Passer en contexte le slug d'initiative, la description et le type suggéré (PRD/RFC/Libre) tirés du tableau
@@ -137,6 +165,8 @@ Détermine la prochaine étape logique selon cette priorité (première qui matc
    > Pipeline vide. Tu veux démarrer par une initiative ou directement par une spec ?
    - « /initiative — structurer une vision » — suggérer `/initiative`
    - « /spec — aller direct à la spec » — suggérer `/spec`
+
+**États passifs** (📝 spec en review, 🔨 PR impl déjà ouverte en review) : ces états n'ont pas d'action pilote — la review est le bloquant. Ne jamais les sortir en recommandation principale ; les mentionner comme options secondaires dans le dashboard sous la forme « suivre la review de PR #<n> ».
 
 **Règle** : toujours demander confirmation via `AskUserQuestion` avant de chaîner vers un skill.
 

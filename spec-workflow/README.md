@@ -33,14 +33,22 @@ Branche courante : feature/refonte-onboarding
 
 Initiative: Refonte onboarding (1/4 specs done)
 ├─ ✅ welcome-screen — implémentée (PR #42 merged)
-├─ 🔨 profile-setup — fast-track en cours (PR #51 draft, impl/profile-setup)
-├─ 📝 email-verification — spec PR open (#55) en attente de review
-└─ ⏳ tutorial-tour — pending (pas encore de /spec)
+├─ 🔨 profile-setup — impl en cours (PR impl #51 draft)
+├─ 📬 email-verification — prête pour /impl (PR spec #55 merged)
+├─ 📄 tutorial-tour — spec locale non pushée
+└─ ⏳ permissions-onboarding — pending
 
-Prochaine action suggérée : /spec-workflow next
+**Prochaine action suggérée :** reprendre l'impl `profile-setup` (PR #51 draft)
+
+Autres options :
+- Lancer /impl email-verification (spec mergée, prête)
+- Pousser la spec tutorial-tour vers une PR
+- Créer la spec pending permissions-onboarding
 ```
 
-Icônes : ⏳ pending · 📝 spec créée · 🔨 impl en cours · ✅ done.
+Icônes : ⏳ pending · 📄 spec locale · 📝 spec en review · 📬 prête pour /impl · 🔨 impl en cours · ✅ done.
+
+Principe directeur du `next` : **finir avant de commencer** — les fast-tracks en draft ont priorité sur le démarrage d'une nouvelle impl. Les états passifs (📝, PR impl en review) apparaissent en options secondaires, jamais en recommandation principale.
 
 ### `/initiative`
 
