@@ -131,6 +131,7 @@ Règles :
 - La recommandation principale applique strictement la priorité de la section **Prochaine action** (première règle qui matche gagne)
 - Les options secondaires listent les autres actions actionnables : fast-tracks non retenus, specs 📬 non prioritaires, specs 📄 à pousser, specs ⏳ d'autres initiatives à créer
 - Les états passifs (📝 spec en review, 🔨 PR impl en review) apparaissent en options secondaires comme « suivre la review de PR #<n> », jamais en recommandation principale
+- Pour les specs ⏳ pending surfacées en options secondaires, appliquer la même logique de dépendances que la section **Prochaine action** (règle 4) : ne proposer que les candidates débloquées, et mentionner « débloque N autre(s) » quand pertinent
 - Maximum 5 options secondaires pour garder le dashboard lisible
 - Le dashboard est **passif** — ne pas exécuter `AskUserQuestion` ici. Le chaînage n'est déclenché que par `/spec-workflow next` ou par une demande explicite de l'utilisateur
 
@@ -155,10 +156,15 @@ Détermine la prochaine étape logique selon cette priorité (première qui matc
    > La spec `<slug>` est rédigée localement mais jamais pushée. Pousser vers une PR spec, ou démarrer `/impl` en local ?
 
 4. **Spec à créer depuis une initiative** (⏳ pending) : initiative active avec au moins une ligne `pending` dans le tableau de découpage
-   → proposer `/spec` avec le contexte de l'initiative :
-   > Initiative `<init-slug>` a des specs pending. Lancer `/spec "<description de la prochaine spec pending>"` ?
+   → choisir la prochaine spec à proposer en suivant cet ordre :
+   1. **Candidates débloquées** — specs pending dont la colonne `Dépendances` vaut `—` ou dont toutes les dépendances sont en statut `done` dans le tableau
+   2. **Priorité** — parmi les candidates, préférer P1 > P2 > P3
+   3. **Ordre du découpage** — en cas d'égalité, prendre la spec avec le numéro de ligne le plus bas
+   → proposer `/spec` avec le contexte :
+   > Initiative `<init-slug>` a des specs pending. Lancer `/spec "<description de la spec choisie>"` ?
    - Passer en contexte le slug d'initiative, la description et le type suggéré (PRD/RFC/Libre) tirés du tableau
-   - Si plusieurs specs pending existent, poser une question supplémentaire pour choisir laquelle
+   - Si la spec choisie **débloque d'autres specs pending** (c'est-à-dire qu'elle figure dans la colonne `Dépendances` d'autres lignes), mentionner explicitement « débloque N autre(s) spec(s) » pour justifier le choix
+   - Si aucune candidate n'est débloquée (toutes les pending ont des dépendances non satisfaites), le signaler : l'initiative est bloquée par une spec déjà démarrée ou par une incohérence du tableau
 
 5. **Pipeline vide** : aucune initiative, aucune spec
    → proposer un choix :
