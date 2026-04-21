@@ -1,6 +1,6 @@
 # Changelog
 
-## À venir
+## v1.2.0 — 2026-04-21
 
 ### Ajouts
 
