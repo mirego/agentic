@@ -199,9 +199,9 @@ Créer une story dans `<CLÉ-PROJET>` :
 
 Afficher l'URL de la story dans le summary final.
 
-### spec-workflow:impl:started
+### spec-workflow:spec:created
 
-Chercher la story portant `init:<slug>` dans sa description (JQL). Si trouvée et au statut `READY FOR DEV`, transitionner vers `DEV IN PROGRESS`. Sinon skip silencieux.
+Si la spec est liée à une initiative, chercher la story portant `init:<slug>` dans sa description (JQL). Si trouvée **et au statut `READY FOR DEV`**, transitionner vers `DEV IN PROGRESS`. Sinon skip silencieux — la transition est idempotente et ne déclenche qu'une fois, au premier spec de l'initiative (la story est déjà `DEV IN PROGRESS` pour les specs suivantes).
 
 ### spec-workflow:initiative:completed
 
