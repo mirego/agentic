@@ -1,7 +1,7 @@
 ---
 description: Implémenter un changement à partir d'une spec
 argument-hint: "<slug de la spec>"
-allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task, AskUserQuestion, TaskCreate, TaskUpdate
 ---
 
 Tu es un développeur senior. Ton rôle est d'implémenter un changement défini par une spécification formelle (fichier de spec créé par le skill `/spec`). Tout le contenu généré (PR, commits, messages) doit être rédigé dans la langue du projet : vérifie la section « Langue » de `AGENTS.md`. Si aucune langue n'est configurée, utilise la langue dans laquelle l'utilisateur communique.
@@ -126,6 +126,11 @@ Présente un résumé clair :
 - Aperçu du plan d'implémentation (extrait de la spec)
 - Nombre de phases estimées
 
+### Extensions projet — événement
+#### `spec-workflow:impl:started`
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:impl:started` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
+
 ---
 
 ## Phase 2 — Exploration du codebase
@@ -164,6 +169,17 @@ Pour chaque phase, définis :
 
 Présente le plan au dev avec `AskUserQuestion` pour approbation. Itère si nécessaire.
 
+### Matérialiser le plan en tâches
+
+Une fois le plan approuvé, appelle `TaskCreate` pour rendre la progression visible pendant l'exécution. Crée les tâches dans cet ordre :
+
+1. Une tâche par phase d'implémentation du plan (titre = description de la phase)
+2. Une tâche **Tests** pour la phase de tests obligatoire
+3. Une tâche **Validation et archivage** qui couvre 4a–4f (validation complète, divergences, documentation projet, archivage backlog, archivage spec, archivage initiative)
+4. Une tâche **Ouvrir la PR** pour Phase 5
+
+Chaque tâche utilise `blocked_by: [id]` pour pointer sur la précédente — les phases sont des commits atomiques strictement ordonnés. Seule la première n'a pas de dépendance. Les transitions `in_progress` → `completed` se font au fil de l'eau en Phases 4 et 5 (une tâche à la fois, jamais en batch à la fin).
+
 ---
 
 ## Phase 4 — Implémentation
@@ -183,7 +199,7 @@ git branch --show-current
 
 Pour chaque phase du plan approuvé :
 
-1. Informe l'utilisateur de la phase en cours
+1. **Démarrer la tâche** : marquer la tâche correspondante `in_progress` via `TaskUpdate` et informer l'utilisateur de la phase en cours
 2. Implémente les changements (Write, Edit)
 3. Committe avec un message descriptif :
    ```bash
@@ -191,11 +207,11 @@ Pour chaque phase du plan approuvé :
    git commit -m "<description de la phase>"
    ```
 4. Lance `make check` **en background** (via `run_in_background`) pour valider formatage, compilation et tests sans bloquer le debut de la phase suivante. Si `make check` echoue avec "No rule to make target", le projet n'a pas de target `check` — avertir l'utilisateur et lui demander quelle commande de validation utiliser a la place.
-5. **Avant de commencer la phase suivante**, verifie le resultat de la validation background. Si une regression est detectee, corriger immediatement avant de continuer.
+5. **Avant de commencer la phase suivante**, verifie le resultat de la validation background. Si une regression est detectee, corriger immediatement avant de continuer. Sinon, marquer la tâche `completed` via `TaskUpdate`.
 
 **Phase de tests (obligatoire) :**
 
-Après les phases d'implémentation, écris les tests en suivant les patterns identifiés en Phase 2. C'est une phase à part entière avec son propre commit :
+Marquer la tâche **Tests** `in_progress` via `TaskUpdate`. Après les phases d'implémentation, écris les tests en suivant les patterns identifiés en Phase 2. C'est une phase à part entière avec son propre commit :
 
 1. **Crée les fixtures** nécessaires dans `test/support/fixtures/` (si de nouveaux schemas ont été créés)
 2. **Écris les tests de contexte** (`use DataCase`) pour chaque nouveau schema/contexte :
@@ -217,8 +233,11 @@ Après les phases d'implémentation, écris les tests en suivant les patterns id
    git add test/
    git commit -m "Ajouter tests: <description>"
    ```
+6. Marquer la tâche **Tests** `completed` via `TaskUpdate`.
 
 ### 4a. Validation complète
+
+Marquer la tâche **Validation et archivage** `in_progress` via `TaskUpdate`. Cette tâche couvre l'ensemble des sous-étapes 4a–4f — ne la repasse pas à `in_progress` entre les sous-étapes.
 
 Roule la validation complète du projet :
 ```bash
@@ -342,6 +361,11 @@ Si aucun item backlog n'est lié ou si `BACKLOG.md` n'existe pas, passe cette é
    git commit -m "Archiver spec implémentée: <slug>"
    ```
 
+#### Extensions projet — événement
+##### `spec-workflow:spec:completed`
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:spec:completed` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
+
 ### 4f. Vérification et archivage de l'initiative liée
 
 Si la spec implémentée est liée à une initiative (`init_slug` trouvé via le backlog ou la spec) :
@@ -383,11 +407,27 @@ Si la spec implémentée est liée à une initiative (`init_slug` trouvé via le
     git commit -m "Mettre à jour initiative: <init-slug>"
     ```
 
+#### Extensions projet — événement
+##### `spec-workflow:initiative:completed`
+
+**Conditionnel** : déclencher cet événement uniquement si l'initiative vient d'être archivée à l'étape 3c (fichier déplacé vers `docs/initiatives/done/`). Sinon, ignorer entièrement ce callout — une mise à jour de statut `spec-created` → `done` sans archivage ne déclenche rien ici.
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:initiative:completed` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
+
 Si la spec n'est pas liée à une initiative, passe cette étape silencieusement.
+
+### Extensions projet — événement
+#### `spec-workflow:impl:completed`
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:impl:completed` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
+
+Une fois 4a–4f traitées (en sautant silencieusement celles qui ne s'appliquent pas), marquer la tâche **Validation et archivage** `completed` via `TaskUpdate`.
 
 ---
 
 ## Phase 5 — GitHub Integration
+
+Marquer la tâche **Ouvrir la PR** `in_progress` via `TaskUpdate`.
 
 ### 5a. Créer le label impl (idempotent)
 
@@ -454,6 +494,8 @@ EOF
 ```
 
 Si aucune PR de spec n'a été trouvée (spec créée manuellement), omettre la ligne `Spec PR`.
+
+Une fois la PR créée, marquer la tâche **Ouvrir la PR** `completed` via `TaskUpdate`.
 
 ---
 
