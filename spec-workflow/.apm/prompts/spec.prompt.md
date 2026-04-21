@@ -31,6 +31,11 @@ est pertinent pour la tâche en cours :
 
 ## Phase 1 — Discovery
 
+### Extensions projet — événement
+#### `spec-workflow:spec:started`
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:spec:started` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
+
 Commence par rassembler le contexte :
 
 ```bash
@@ -294,6 +299,13 @@ Router selon la réponse :
      git commit -m "Mettre à jour initiative: spec créée pour <slug>"
      ```
 
+#### Extensions projet — événement
+##### `spec-workflow:spec:created`
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:spec:created` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
+
+#### Chaîner vers `/impl`
+
 5. **Passer directement au skill `/impl`** sur cette même branche. Exécuter les phases de `/impl` à la suite. La spec n'a pas besoin d'être mergée puisqu'elle sera dans la même PR.
 
 6. **Sauter la Phase 6 ci-dessous** (pas de summary `/spec` — c'est `/impl` Phase 6 qui produit le summary final de la PR combinée).
@@ -368,6 +380,11 @@ Pousser les commits restants :
 ```bash
 git push
 ```
+
+#### Extensions projet — événement
+##### `spec-workflow:spec:created`
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:spec:created` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
 
 ---
 

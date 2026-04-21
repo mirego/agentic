@@ -151,6 +151,74 @@ BACKLOG.md                # Optionnel — suivi backlog (géré par /initiative 
 
 Ces dossiers sont créés automatiquement par les prompts si absents. `BACKLOG.md` est optionnel — si le fichier existe, les prompts l'utilisent pour le suivi des items (tags `spec~`/`spec:`, archivage dans `## Done`). Si le fichier n'existe pas, le pipeline fonctionne normalement sans backlog.
 
+## Intégrations externes
+
+Les prompts core (`/initiative`, `/spec`, `/impl`) restent volontairement indépendants des outils externes (trackers d'issues, bases de connaissances, notifications, CI). Pour brancher un outil tiers dans le pipeline, le projet consommateur déclare une section d'intégration dans son `AGENTS.md` qui écoute les **événements de cycle de vie** émis aux transitions clés du workflow.
+
+### Événements émis
+
+| Événement | Émis par | Moment |
+|---|---|---|
+| `spec-workflow:initiative:started` | `/initiative` | Début de Phase 1, avant le parsing de `$ARGUMENTS` |
+| `spec-workflow:initiative:created` | `/initiative` | Après Phase 6 (document + PR créés), avant le summary |
+| `spec-workflow:initiative:completed` | `/impl` | Dans Phase 4f, uniquement quand l'initiative vient d'être archivée dans `docs/initiatives/done/` |
+| `spec-workflow:spec:started` | `/spec` | Début de Phase 1, avant la discovery |
+| `spec-workflow:spec:created` | `/spec` | Après Phase 5 (commit/push faits), avant le chaînage `/impl` en fast-track ou le summary en PR séparée |
+| `spec-workflow:spec:completed` | `/impl` | Dans Phase 4e, après archivage de la spec dans `docs/specs/impl/` |
+| `spec-workflow:impl:started` | `/impl` | Après Phase 1 (spec chargée, `init_slug` résolu), avant l'exploration du codebase |
+| `spec-workflow:impl:completed` | `/impl` | Après Phase 4f, avant l'ouverture de la PR GitHub |
+
+### Règles
+
+- **Match par chaîne exacte** — le callout dans le prompt et la section dans `AGENTS.md` matchent sur le nom de l'événement verbatim (ex: `spec-workflow:spec:created`). Le niveau de heading (`#`, `##`, `###`, `####`) n'a pas d'importance, c'est la chaîne qui compte.
+- **Optionnel** — si `AGENTS.md` ne déclare pas un événement donné, le prompt continue sans rien faire. Aucun message d'erreur.
+- **Non bloquant** — un échec d'extension (MCP non connecté, OAuth expiré, API indisponible) ne doit jamais annuler ou bloquer le flow principal. Prévenir l'utilisateur, continuer.
+- **`allowed-tools`** — les prompts core ne déclarent pas les outils MCP que les intégrations utilisent (on ne sait pas d'avance quels serveurs le projet expose). Le projet consommateur les autorise via les mécanismes de permission de son client APM (Claude Code, OpenCode, Copilot, etc.) ou via le frontmatter de ses prompts personnalisés.
+
+### Exemple — tracker Jira via MCP
+
+Extrait d'`AGENTS.md` d'un projet qui utilise Jira via le serveur MCP Atlassian :
+
+````markdown
+## Extensions spec-workflow
+
+L'équipe utilise Jira via le serveur MCP Atlassian. La déclaration est versionnée dans `.mcp.json` ; les skills passent toujours par les outils MCP, jamais par l'API Jira directement.
+
+**Contexte projet**
+- Projet Jira : `<CLÉ-PROJET>`
+- Label obligatoire sur chaque issue : `<label>`
+- Clé de corrélation Markdown ↔ Jira : ligne `init:<slug>` dans la description de l'issue
+
+### spec-workflow:initiative:created
+
+Créer une story dans `<CLÉ-PROJET>` :
+- *Summary* : titre de l'initiative
+- *Description* : vision + lien vers le document + lien vers la PR + ligne `init:<slug>`
+- *Label* : `<label>`
+- *Statut initial* : `READY FOR DEV`
+
+Afficher l'URL de la story dans le summary final.
+
+### spec-workflow:spec:created
+
+Si la spec est liée à une initiative, chercher la story portant `init:<slug>` dans sa description (JQL). Si trouvée **et au statut `READY FOR DEV`**, transitionner vers `DEV IN PROGRESS`. Sinon skip silencieux — la transition est idempotente et ne déclenche qu'une fois, au premier spec de l'initiative (la story est déjà `DEV IN PROGRESS` pour les specs suivantes).
+
+### spec-workflow:initiative:completed
+
+Chercher la story via `init:<slug>` et la transitionner vers `DONE`.
+````
+
+### Autres patterns d'intégration
+
+Le mécanisme est générique — quelques cas d'usage au-delà du tracker :
+
+- **Enrichissement de contexte** (`spec-workflow:initiative:started` ou `spec:started`) — consommer un argument court (ex: numéro de ticket Notion/Linear) et injecter le contenu du ticket comme contexte enrichi pour la discovery du prompt
+- **Miroir documentaire** (`spec-workflow:spec:created` ou `impl:completed`) — créer/mettre à jour une page Notion/Confluence qui miroite le document Markdown
+- **Notifications** (`spec-workflow:impl:completed` ou `initiative:completed`) — annoncer dans Slack, Teams, Discord, webhooks
+- **Trigger CI/CD** (`spec-workflow:impl:started`) — démarrer un job de préparation (provisionnement d'environnement, build de branche)
+
+Dans tous les cas la règle **non bloquante** tient : une extension qui échoue ne doit pas compromettre la création d'artefacts ou de PRs.
+
 ## Installation
 
 ```yaml

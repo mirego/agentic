@@ -12,6 +12,11 @@ Tu es un agent Product Owner. Ton rôle est de guider l'utilisateur à travers u
 
 ## Phase 1 — Discovery produit
 
+### Extensions projet — événement
+#### `spec-workflow:initiative:started`
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:initiative:started` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
+
 ### 1a. Parser l'argument
 
 Si `$ARGUMENTS` est vide ou vague, engage un dialogue orienté PO via `AskUserQuestion` :
@@ -302,6 +307,13 @@ EOF
 ```bash
 git checkout main
 ```
+
+---
+
+### Extensions projet — événement
+#### `spec-workflow:initiative:created`
+
+Si `AGENTS.md` contient une section dont le titre inclut exactement la chaîne `spec-workflow:initiative:created` (quel que soit le niveau de heading : `#`, `##`, `###` ou `####`), exécuter les actions qui y sont déclarées avant de continuer. Skip silencieux si aucune section correspondante n'existe ou si les outils requis (MCP, CLI) sont indisponibles — les extensions sont **non bloquantes** et ne doivent jamais annuler le flow principal.
 
 ---
 
