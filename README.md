@@ -162,3 +162,13 @@ APM résout les versions via les refs git. Un tag sur ce repo s'applique à **to
 | Branche | `#main` | Développement — suit les derniers changements |
 | Commit SHA | `#abc123d` | Reproductibilité maximale |
 | Sans ref | (rien) | Résout la branche par défaut au moment de l'install |
+
+## Licence
+
+mirego-agentic est © 2026-present [Mirego](https://www.mirego.com) et peut être distribué librement sous la licence [New BSD](http://opensource.org/licenses/BSD-3-Clause). Voir le fichier [`LICENSE.md`](https://github.com/mirego/mirego-agentic/blob/main/LICENSE.md).
+
+## À propos de Mirego
+
+[Mirego](https://www.mirego.com) est une équipe de gens passionnés qui croit que le travail est un lieu où l'on peut innover et s'amuser. Nous sommes une équipe de [gens talentueux](https://www.mirego.com/fr/culture) qui imaginent et construisent de belles applications Web et mobiles. Nous nous réunissons pour partager des idées et [changer le monde](http://www.mirego.org).
+
+Nous aimons aussi les [logiciels libres](https://open.mirego.com) et nous essayons de redonner à la communauté autant que nous le pouvons.
