@@ -1,11 +1,11 @@
-# mirego-agentic
+# agentic
 
 Repo de packages APM partagés chez Mirego. Distribue des skills, commandes et prompts vers Claude Code, OpenCode et GitHub Copilot.
 
 ## Structure du repo
 
 ```
-mirego-agentic/
+agentic/
 ├── apm.yml                      # Metapackage root
 ├── spec-workflow/               # Package : pipeline initiative → spec → impl
 │   ├── apm.yml
@@ -77,7 +77,7 @@ Les prompts partagés doivent être indépendants de la stack technique du proje
 
 - APM résout les versions via les **refs git** (tags, branches, SHA) — pas via le champ `version` de `apm.yml` qui est purement informatif
 - Les tags sont au niveau du **repo** : `v1.0.0` s'applique à tous les packages du monorepo simultanément
-- Les consommateurs pinnent sur un tag : `mirego/mirego-agentic/spec-workflow#v1.0.0`
+- Les consommateurs pinnent sur un tag : `mirego/agentic/spec-workflow#v1.0.0`
 - Pas de semver ranges (`^1.0.0`) — seulement des refs exactes
 - Le `apm.lock.yaml` du consommateur capture le commit SHA exact pour la reproductibilité
 - Chaque package a son propre `CHANGELOG.md` pour documenter ses changements
