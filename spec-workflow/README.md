@@ -225,5 +225,5 @@ Dans tous les cas la règle **non bloquante** tient : une extension qui échoue 
 # apm.yml
 dependencies:
   apm:
-    - mirego/mirego-agentic/spec-workflow#v1.0.0
+    - mirego/agentic/spec-workflow#v1.0.0
 ```

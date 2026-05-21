@@ -1,6 +1,7 @@
-# mirego-agentic
-
-Packages [APM](https://github.com/microsoft/apm) et guides pour standardiser le travail AI chez Mirego. Centralise les skills, commandes et prompts partagés entre projets et les distribue automatiquement vers Claude Code, OpenCode et GitHub Copilot.
+<div align="center">
+  <img src="assets/logo.png" width="600" />
+  <p><br />Packages <a href="https://github.com/microsoft/apm">APM</a> et guides pour standardiser le travail AI chez Mirego. Centralise les skills, commandes et prompts partagés entre projets et les distribue automatiquement vers les agents de développement.</p>
+</div>
 
 | Section                                                    | Description                                                 |
 | ---------------------------------------------------------- | ----------------------------------------------------------- |
@@ -45,7 +46,7 @@ Le [guide d'accompagnement](docs/onboarding.md) est conçu pour être fourni à 
 
 ### Packages APM externes
 
-Skills, commandes et prompts partagés entre projets, hébergés sur un repo git et référencés par version. Ce repo (`mirego-agentic`) est le point de distribution des packages partagés Mirego.
+Skills, commandes et prompts partagés entre projets, hébergés sur un repo git et référencés par version. Ce repo (`agentic`) est le point de distribution des packages partagés Mirego.
 
 #### `spec-workflow` — Pipeline de développement
 
@@ -81,7 +82,7 @@ Voir le [README du package](spec-workflow/README.md) pour les prérequis, les te
 # apm.yml
 dependencies:
   apm:
-    - mirego/mirego-agentic/spec-workflow#v1.0.0
+    - mirego/agentic/spec-workflow#v1.0.0
 ```
 
 ### Packages APM locaux
@@ -146,7 +147,7 @@ APM résout les versions via les refs git. Un tag sur ce repo s'applique à **to
 
 1. Modifier la version dans `apm.yml` :
    ```yaml
-   - mirego/mirego-agentic/spec-workflow#v1.1.0
+   - mirego/agentic/spec-workflow#v1.1.0
    ```
 2. Réinstaller :
    ```bash
@@ -165,7 +166,7 @@ APM résout les versions via les refs git. Un tag sur ce repo s'applique à **to
 
 ## Licence
 
-mirego-agentic est © 2026-present [Mirego](https://www.mirego.com) et peut être distribué librement sous la licence [New BSD](http://opensource.org/licenses/BSD-3-Clause). Voir le fichier [`LICENSE.md`](https://github.com/mirego/mirego-agentic/blob/main/LICENSE.md).
+Agentic est © 2026-present [Mirego](https://www.mirego.com) et peut être distribué librement sous la licence [New BSD](http://opensource.org/licenses/BSD-3-Clause). Voir le fichier [`LICENSE.md`](https://github.com/mirego/agentic/blob/main/LICENSE.md).
 
 ## À propos de Mirego
 
