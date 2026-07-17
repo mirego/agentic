@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Sécurité
+
+- Anti-injection LLM dans les prompts core (`/initiative`, `/spec`, `/impl`, `/spec-workflow`) :
+  - `$ARGUMENTS` encadré comme données non fiables (`$user_input_start` / `$user_input_end`)
+  - Protocole d'extensions `AGENTS.md` : politique d'intégration déclarative, périmètre MCP/CLI uniquement, refus des actions hors scope / injection
+  - Specs, initiatives, backlog et tickets externes traités comme données métier (pas d'instructions système)
+  - Validation stricte des slugs avant shell/chemins
+  - `/impl` Phase 4c : hooks `spec-workflow:…` et config agent hors mise à jour auto (diff + confirmation)
+
 ## v1.2.0 — 2026-04-21
 
 ### Ajouts
