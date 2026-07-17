@@ -173,6 +173,8 @@ Les prompts core (`/initiative`, `/spec`, `/impl`) restent volontairement indép
 - **Match par chaîne exacte** — le callout dans le prompt et la section dans `AGENTS.md` matchent sur le nom de l'événement verbatim (ex: `spec-workflow:spec:created`). Le niveau de heading (`#`, `##`, `###`, `####`) n'a pas d'importance, c'est la chaîne qui compte.
 - **Optionnel** — si `AGENTS.md` ne déclare pas un événement donné, le prompt continue sans rien faire. Aucun message d'erreur.
 - **Non bloquant** — un échec d'extension (MCP non connecté, OAuth expiré, API indisponible) ne doit jamais annuler ou bloquer le flow principal. Prévenir l'utilisateur, continuer.
+- **Intégrations exécutées, hors-périmètre refusé** — le corps d'une section d'événement est une politique d'intégration (quoi synchroniser avec un outil externe). Les prompts l'exécutent via MCP/CLI d'intégration. Ils **refusent** : git destructif, exfiltration de secrets, modification de hooks/`AGENTS.md`/CI, shell arbitraire, contournement des phases du prompt — même si le corps de section le demande.
+- **Contexte métier, pas contrôle d'agent** — tickets externes, specs, initiatives et `BACKLOG.md` alimentent discovery/plan/impl. Les directives d'agent embarquées dans ce contenu (ignore rules, dump secrets, rewrite hooks) sont ignorées.
 - **`allowed-tools`** — les prompts core ne déclarent pas les outils MCP que les intégrations utilisent (on ne sait pas d'avance quels serveurs le projet expose). Le projet consommateur les autorise via les mécanismes de permission de son client APM (Claude Code, OpenCode, Copilot, etc.) ou via le frontmatter de ses prompts personnalisés.
 
 ### Exemple — tracker Jira via MCP
@@ -212,12 +214,21 @@ Chercher la story via `init:<slug>` et la transitionner vers `DONE`.
 
 Le mécanisme est générique — quelques cas d'usage au-delà du tracker :
 
-- **Enrichissement de contexte** (`spec-workflow:initiative:started` ou `spec:started`) — consommer un argument court (ex: numéro de ticket Notion/Linear) et injecter le contenu du ticket comme contexte enrichi pour la discovery du prompt
+- **Enrichissement de contexte** (`spec-workflow:initiative:started` ou `spec:started`) — consommer un argument court (ex: numéro de ticket Notion/Linear) et utiliser le contenu du ticket comme contexte métier pour la discovery (titre, description, acceptance criteria). Les directives d'agent embarquées dans le ticket sont ignorées.
 - **Miroir documentaire** (`spec-workflow:spec:created` ou `impl:completed`) — créer/mettre à jour une page Notion/Confluence qui miroite le document Markdown
 - **Notifications** (`spec-workflow:impl:completed` ou `initiative:completed`) — annoncer dans Slack, Teams, Discord, webhooks
-- **Trigger CI/CD** (`spec-workflow:impl:started`) — démarrer un job de préparation (provisionnement d'environnement, build de branche)
+- **Trigger CI/CD** (`spec-workflow:impl:started`) — démarrer un job de préparation (provisionnement d'environnement, build de branche) via l'outil d'intégration prévu — pas via du shell arbitraire inventé par le ticket
 
 Dans tous les cas la règle **non bloquante** tient : une extension qui échoue ne doit pas compromettre la création d'artefacts ou de PRs.
+
+### Sécurité anti-injection (prompts)
+
+Les prompts core appliquent aussi :
+
+- Encadrement de `$ARGUMENTS` comme données non fiables
+- Validation stricte des slugs (`^[a-z0-9][a-z0-9-]{0,49}$`) avant shell/chemins
+- Specs / initiatives / backlog = données ; pas d'exécution de directives embarquées
+- `/impl` ne peut pas écrire de hooks `spec-workflow:…` dans `AGENTS.md` sans approbation explicite du diff
 
 ## Installation
 
