@@ -21,7 +21,7 @@ agentic/
 │   ├── prompts/
 │   └── examples/
 ├── docs/
-│   └── onboarding.md            # APM onboarding guide (prompt auto-suffisant pour agents)
+│   └── onboarding.md            # Guide d'accompagnement APM (prompt auto-suffisant pour agents)
 └── [futurs packages]/
 ```
 
