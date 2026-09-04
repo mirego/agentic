@@ -13,8 +13,15 @@ agentic/
 │   ├── CHANGELOG.md
 │   ├── .apm/prompts/            # Prompts distribués par APM
 │   └── templates/               # Templates make doctor / make check
+├── pi-fusion-mode/                 # Pi package: Fusion posture (main lock + pi-subagents)
+│   ├── package.json             # pi-package (extensions + prompts)
+│   ├── README.md
+│   ├── CHANGELOG.md
+│   ├── extensions/
+│   ├── prompts/
+│   └── examples/
 ├── docs/
-│   └── onboarding.md            # Guide d'accompagnement APM (prompt auto-suffisant pour agents)
+│   └── onboarding.md            # APM onboarding guide (prompt auto-suffisant pour agents)
 └── [futurs packages]/
 ```
 
@@ -45,6 +52,21 @@ Le `apm.yml` minimal :
 name: mon-package
 version: 1.0.0
 ```
+
+### Pi packages
+
+Example: `pi-fusion-mode/` — `package.json` with `keywords: ["pi-package"]` and:
+
+```json
+{
+  "pi": {
+    "extensions": ["./extensions/pi-fusion-mode.ts"],
+    "prompts": ["./prompts"]
+  }
+}
+```
+
+Consumer install: `pi install <path-or-git>` (not `apm install`).
 
 ### Frontmatter des prompts
 

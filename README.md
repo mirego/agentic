@@ -85,6 +85,27 @@ dependencies:
     - mirego/agentic/spec-workflow#v1.0.0
 ```
 
+### Pi packages
+
+#### `pi-fusion-mode` — Fusion posture (locked main + pi-subagents)
+
+[Pi](https://pi.earendil.works/) package (not APM): while active, the main plans/reviews without `edit`/`write`; implementation goes through **pi-subagents** builtins (`worker`, `scout`, …). Double gate + bash allowlist; coexists with `@gotgenes/pi-permission-system`.
+
+| Command | Description |
+|---------|-------------|
+| `/fusion-build` | Lock main + delegate to `worker` |
+| `/fusion-plan` | Lock main without writers |
+| `/fusion-off` | Restore tools |
+| `/fusion-status` | Health-check |
+
+```bash
+pi install /path/to/agentic/pi-fusion-mode
+# default off — enable with /fusion-build
+```
+
+See the [package README](pi-fusion-mode/README.md).
+
+
 ### Packages APM locaux
 
 Skills propres à un projet, structurés comme mini-packages APM :

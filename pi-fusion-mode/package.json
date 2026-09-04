@@ -1,0 +1,33 @@
+{
+  "name": "@mirego/pi-fusion-mode",
+  "version": "1.0.0",
+  "description": "Fusion posture for Pi: main without edit, delegation to pi-subagents (worker/scout/…).",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-extension",
+    "pi-coding-agent",
+    "fusion",
+    "subagents",
+    "permissions"
+  ],
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirego/agentic.git",
+    "directory": "pi-fusion-mode"
+  },
+  "pi": {
+    "extensions": ["./extensions/pi-fusion-mode.ts"],
+    "prompts": ["./prompts"]
+  },
+  "files": [
+    "extensions",
+    "prompts",
+    "examples",
+    "README.md",
+    "CHANGELOG.md",
+    "package.json"
+  ]
+}

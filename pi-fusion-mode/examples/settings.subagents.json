@@ -1,0 +1,22 @@
+{
+  "subagents": {
+    "maxSubagentDepth": 2,
+    "agentOverrides": {
+      "worker": {
+        "model": "<provider>/<modele-rapide-cheap>"
+      },
+      "scout": {
+        "model": "<provider>/<modele-rapide-cheap>"
+      },
+      "researcher": {
+        "model": "<provider>/<modele-moyen>"
+      },
+      "reviewer": {
+        "model": "<autre-provider>/<modele-fort>"
+      },
+      "oracle": {
+        "model": "<provider>/<modele-fort>"
+      }
+    }
+  }
+}
