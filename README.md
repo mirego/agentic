@@ -154,16 +154,20 @@ APM résout les versions via les refs git. Un tag sur ce repo s'applique à **to
 
 ### Publier une nouvelle version
 
+La version des packages suit le tag du repo : `mirego/agentic/<package>#v1.1.0` installe la version `1.1.0` de chaque package, qu'il ait changé ou non.
+
 1. Merger la PR avec les changements
-2. Mettre à jour le CHANGELOG du ou des packages concernés
+2. Dans une PR de release :
+   - Passer le champ `version` de tous les `apm.yml` (racine et packages) à la nouvelle version
+   - Dater l'entrée de chaque `CHANGELOG.md` (« Aucun changement » pour un package inchangé)
 3. Tagger et pousser :
    ```bash
    git tag v1.1.0
    git push origin v1.1.0
    ```
-4. Créer la release GitHub :
+4. Créer la release GitHub avec les notes tirées des CHANGELOGs :
    ```bash
-   gh release create v1.1.0 --title "v1.1.0" --generate-notes
+   gh release create v1.1.0 --title "v1.1.0" --notes-file notes.md
    ```
 
 ### Mettre à jour dans un projet consommateur

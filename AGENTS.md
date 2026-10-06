@@ -86,7 +86,8 @@ Les prompts partagés doivent être indépendants de la stack technique du proje
 - Les consommateurs pinnent sur un tag : `mirego/agentic/spec-workflow#v1.0.0`
 - Pas de semver ranges (`^1.0.0`) — seulement des refs exactes
 - Le `apm.lock.yaml` du consommateur capture le commit SHA exact pour la reproductibilité
-- Chaque package a son propre `CHANGELOG.md` pour documenter ses changements
+- La version de chaque package suit le tag du repo : à chaque release, tous les `apm.yml` (racine et packages) prennent la version du tag, même sans changement — le numéro pinné par le consommateur correspond toujours à celui du package
+- Chaque package a son propre `CHANGELOG.md` pour documenter ses changements ; un package sans changement reçoit une entrée « Aucun changement »
 - Le flow de release est documenté dans le [README](README.md#release)
 
 ### Workflow de contribution
