@@ -114,3 +114,28 @@ dependencies:
 ```
 
 Puis `apm install` — les prompts et la bibliothèque de guides sont déployés dans les dossiers des agents configurés.
+
+## Autres harnais (Pi et autres agents)
+
+APM déploie les slash commands et le skill selon les targets configurés. Les skills suivent le standard Agent Skills et sont lus par tous les harnais récents depuis `.agents/skills/`. Pour les slash commands, certains harnais utilisent d'autres dossiers et demandent une petite config :
+
+**Pi** — les prompt templates se chargent depuis `.pi/prompts/`, pas depuis les dossiers de commands APM :
+
+1. Installer avec au moins un target non-Claude (pour peupler `.agents/skills/`) :
+
+   ```yaml
+   # apm.yml
+   targets: [claude, opencode]
+   ```
+
+2. Pointer les prompt templates de Pi vers les commands déployées, dans `.pi/settings.json` :
+
+   ```json
+   {
+     "prompts": ["../.opencode/commands"]
+   }
+   ```
+
+3. `/reload` dans Pi — les commandes `/a11y-audit`, `/a11y-fix` et `/a11y-review` apparaissent dans le complètement de `/`, et le skill est invoquable via `/skill:a11y-guides` ou automatiquement. Au premier lancement, Pi demande d'approuver le projet avant de charger `.agents/skills/` projet.
+
+La bibliothèque de guides embarquée est identique pour tous les harnais — seule la localisation des commands varie.

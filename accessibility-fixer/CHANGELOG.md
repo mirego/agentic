@@ -18,3 +18,8 @@ Première version du package accessibility-fixer.
 
 - Aucun prérequis pour `/a11y-audit` et `/a11y-fix`
 - `gh` CLI authentifié pour `/a11y-review` seulement — dégradation gracieuse si absent
+
+### Compatibilité
+
+- Skills (standard Agent Skills) : natifs chez tous les harnais supportés par APM depuis `.agents/skills/` (Claude Code déploie vers `.claude/skills/`)
+- Slash commands : natives pour Claude Code et OpenCode ; pour les autres harnais (ex. Pi), voir « Autres harnais » dans le [README](README.md)
