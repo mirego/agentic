@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.2.0",
+  "lastUpdated": "2026-10-06",
+  "description": "Index des guides d'accessibilité embarqués dans le skill a11y-guides (package accessibility-fixer). Les chemins sont relatifs à ce manifest — résoudre depuis le dossier contenant ce fichier, pas via le web.",
+
+  "core": [
+    "COMPREHENSIVE_AUDIT_WORKFLOW.md",
+    "COMMON_ISSUES.md",
+    "GUIDE_WCAG_REFERENCE.md",
+    "AUDIT_REPORT_TEMPLATE.md"
+  ],
+
+  "wcag": [
+    "wcag/QUICK_LOOKUP.md",
+    "wcag/COMPONENT_WCAG_MAPPINGS.md",
+    "wcag/SEVERITY_GUIDELINES.md",
+    "wcag/TESTING_CHECKLIST.md",
+    "wcag/MOBILE_WCAG_INTERPRETATION.md",
+    "wcag/PRINCIPLE_1_PERCEIVABLE.md",
+    "wcag/PRINCIPLE_2_OPERABLE.md",
+    "wcag/PRINCIPLE_3_UNDERSTANDABLE.md",
+    "wcag/PRINCIPLE_4_ROBUST.md",
+    "wcag/CONTRAST_CHECKING.md",
+    "wcag/ID_VALIDATION.md",
+    "wcag/LIVE_REGION_FREQUENCY.md",
+    "wcag/EDGE_CASE_VALIDATION.md"
+  ],
+
+  "patterns": [
+    "patterns/AVOID_ROLE_IN_LABEL.md",
+    "patterns/BUTTONS_ACTING_AS_TABS.md",
+    "patterns/COLLECTION_ITEMS_PATTERN.md",
+    "patterns/DECORATIVE_IMAGE_DECISION_TREE.md",
+    "patterns/FONT_SCALING_SUPPORT.md",
+    "patterns/NAVIGATION_BAR_ACCESSIBILITY.md",
+    "patterns/REPEATED_ELEMENTS_CONTEXT.md"
+  ],
+
+  "reference": [
+    "reference/ARIA_PATTERNS_REFERENCE.md"
+  ],
+
+  "platforms": {
+    "web": "platforms/GUIDE_WEB.md",
+    "android": "platforms/GUIDE_ANDROID.md",
+    "ios": "platforms/GUIDE_IOS.md",
+    "react-native": "platforms/GUIDE_REACT_NATIVE.md",
+    "flutter": "platforms/GUIDE_FLUTTER.md",
+    "android-tv": "platforms/GUIDE_ANDROID_TV.md",
+    "fire-tv": "platforms/GUIDE_ANDROID_TV.md",
+    "tvos": "platforms/GUIDE_TVOS.md"
+  },
+
+  "advanced": {
+    "description": "Specialized guides loaded conditionally when specific patterns are detected",
+    "web": {
+      "aria-patterns": {
+        "file": "platforms/WEB_ARIA_PATTERNS.md",
+        "loadWhen": "Complex ARIA patterns detected (tabs, accordion, modal, combobox, menu, disclosure)",
+        "tokenEstimate": 3700
+      }
+    },
+    "ios": {
+      "advanced-features": {
+        "file": "platforms/IOS_ADVANCED.md",
+        "loadWhen": "Advanced VoiceOver features (Magic Tap, Custom Rotor, Large Content Viewer), system setting customizations (Smart Invert, Assistive Access), haptic feedback, keyboard/switch/voice control support, or Vision/Speech frameworks detected",
+        "tokenEstimate": 3560
+      }
+    },
+    "android": {
+      "custom-views": {
+        "file": "platforms/ANDROID_CUSTOM_VIEWS.md",
+        "loadWhen": "Custom views extending from View detected",
+        "tokenEstimate": 4600
+      },
+      "advanced-patterns": {
+        "file": "platforms/ANDROID_ADVANCED.md",
+        "loadWhen": "Gestures (swipe/drag), media content, forms with autofill, keyboard navigation (D-pad), or multi-language content detected",
+        "tokenEstimate": 4555
+      }
+    },
+    "fire-tv": {
+      "fire-os-features": {
+        "file": "platforms/FIRE_OS_ADVANCED.md",
+        "loadWhen": "Fire TV app detected, media content with AD/CC requirements, VoiceView-specific metadata (describedBy, orientationText, usageHint), or custom views for Fire OS",
+        "tokenEstimate": 4080
+      }
+    }
+  }
+}

@@ -85,6 +85,29 @@ dependencies:
     - mirego/agentic/spec-workflow#v1.0.0
 ```
 
+#### `accessibility-fixer` — Audits d'accessibilité
+
+Audits et correctifs d'accessibilité WCAG 2.2 AA dans le projet consommateur, avec bibliothèque de guides embarquée par plateforme (Web, Android, iOS, React Native, Flutter, TV).
+
+| Commande | Description |
+|----------|-------------|
+| `/a11y-audit` | Audit d'accessibilité d'une plateforme/feature : workflow 4 phases, rapport dans `accessibility-audit/reports/` |
+| `/a11y-fix` | Appliquer les correctifs d'un rapport : sélection par sévérité, fixes vérifiés un par un |
+| `/a11y-review` | Review accessibilité d'une PR : commentaires inline, détection de doublons, mode CI |
+
+```
+/a11y-audit  →  rapport  →  /a11y-fix  →  correctifs  →  /a11y-review  →  garde-fou PR
+```
+
+Les guides WCAG 2.2 (36 documents par plateforme, patterns et critères) sont embarqués dans le package — aucun clone ni téléchargement requis. Voir le [README du package](accessibility-fixer/README.md).
+
+```yaml
+# apm.yml
+dependencies:
+  apm:
+    - mirego/agentic/accessibility-fixer#v1.3.0
+```
+
 ### Packages APM locaux
 
 Skills propres à un projet, structurés comme mini-packages APM :
