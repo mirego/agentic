@@ -1,25 +1,20 @@
 # Changelog
 
-## v1.0.0 — 2026-10-06
+## v1.3.0 — 2026-10-06
 
 Première version du package accessibility-fixer.
 
 ### Prompts
 
-- `/a11y-audit` — Audit d'accessibilité WCAG 2.2 AA d'une plateforme/feature : détection de plateforme, workflow 4 phases (Discovery → Deep Dive → Pattern Verification → Report), rapport dans `accessibility-audit/reports/<platform>/`
-- `/a11y-fix` — Appliquer les correctifs d'un rapport d'audit : sélection par sévérité, vérification du code avant chaque fix, résumé `_FIXES_`
-- `/a11y-review` — Review accessibilité d'une PR via `gh` CLI : commentaires inline avec détection de doublons, mode CI avec exit codes
+- `/a11y-audit` — Audit WCAG 2.2 AA d'une plateforme ou d'une feature, rapport dans `accessibility-audit/reports/<platform>/`.
+- `/a11y-fix` — Application des correctifs d'un rapport d'audit, par sévérité.
+- `/a11y-review` — Review accessibilité d'une PR via `gh`, avec commentaires inline et mode CI.
 
 ### Skill
 
-- `a11y-guides` — Bibliothèque de guides WCAG 2.2 embarquée (36 fichiers : workflow d'audit, référence WCAG, guides par plateforme Web/iOS/Android/RN/Flutter/TV, patterns, mappings composants). Résolution locale via `GUIDES_MANIFEST.json` — aucun téléchargement réseau requis. Anciennement distribuée via le repo `dominiclabbe/accessibility-fixer-guides` (désormais archivé, ce package est la source de vérité).
+- `a11y-guides` — Bibliothèque de guides WCAG 2.2 embarquée (Web, iOS, Android, React Native, Flutter, TV), sans accès réseau. Remplace le repo archivé `dominiclabbe/accessibility-fixer-guides`. Voir [README](README.md#bibliothèque-de-guides).
 
 ### Prérequis
 
-- Aucun prérequis pour `/a11y-audit` et `/a11y-fix`
-- `gh` CLI authentifié pour `/a11y-review` seulement — dégradation gracieuse si absent
-
-### Compatibilité
-
-- Skills (standard Agent Skills) : natifs chez tous les harnais supportés par APM depuis `.agents/skills/` (Claude Code déploie vers `.claude/skills/`)
-- Slash commands : natives pour Claude Code et OpenCode ; pour les autres harnais (ex. Pi), voir « Autres harnais » dans le [README](README.md)
+- `gh` CLI authentifié pour `/a11y-review` seulement. Voir [README](README.md#prérequis).
+- Harnais sans slash commands natives : voir [README](README.md#autres-harnais-pi-et-autres-agents).
