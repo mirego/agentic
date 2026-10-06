@@ -13,6 +13,12 @@ agentic/
 │   ├── CHANGELOG.md
 │   ├── .apm/prompts/            # Prompts distribués par APM
 │   └── templates/               # Templates make doctor / make check
+├── accessibility-fixer/         # Package : audits et correctifs d'accessibilité WCAG 2.2
+│   ├── apm.yml
+│   ├── README.md
+│   ├── CHANGELOG.md
+│   ├── .apm/prompts/            # Prompts distribués par APM (/a11y-audit, /a11y-fix, /a11y-review)
+│   └── .apm/skills/a11y-guides/ # Bibliothèque de guides WCAG embarquée
 ├── docs/
 │   └── onboarding.md            # Guide d'accompagnement APM (prompt auto-suffisant pour agents)
 └── [futurs packages]/
