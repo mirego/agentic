@@ -8,6 +8,7 @@
 | [🚀 Démarrage rapide](#-démarrage-rapide)                 | Configurer le projet en quelques minutes                    |
 | [📦 Adopter APM](#-adopter-apm-dans-un-projet)            | Guide d'intégration APM dans un projet existant             |
 | [🧩 Concepts clés](#-concepts-clés)                       | Packages, conventions et source de vérité                   |
+| [🤖 CI Pi / Forra](#-ci-pi--forra)                        | Workflows GitHub Actions réutilisables pour reviews et maintenance |
 | [🏷️ Release](#release)                                    | Publier, mettre à jour et stratégies de pinning             |
 
 ## 🚀 Démarrage rapide
@@ -124,6 +125,27 @@ allowed-tools: Read, Glob, Grep, Bash, Write, Edit        # optionnel
 ```
 
 `description` est le minimum — c'est ce que les agents utilisent pour décider quand invoquer automatiquement un skill.
+
+## 🤖 CI Pi / Forra
+
+Ce dépôt expose aussi un toolkit public de workflows GitHub Actions basés sur Pi et Forra :
+
+- `setup-harness` — installe Pi et configure un `models.json` Forra isolé
+- `pi-pr-review` — review PR générique avec commentaires structurés
+- `pi-maintenance` — maintenance générique qui ouvre une PR automatiquement
+- profils prêts à l’emploi : sécurité, bugs, performance, dependency updates
+
+Exemple minimal :
+
+```yaml
+jobs:
+  review:
+    uses: mirego/agentic/.github/workflows/pi-security-review.yml@v1.0.0
+    secrets:
+      FORRA_API_KEY: ${{ secrets.FORRA_API_KEY }}
+```
+
+Voir le [guide CI](docs/ci.md) pour l’architecture, les inputs et la composition custom.
 
 ## Release
 

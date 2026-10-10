@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mirego/agentic/schemas/review-findings.schema.json",
+  "title": "Pi PR review findings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "findings"],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short overall review summary in Markdown."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "severity", "title", "body", "confidence"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Repository-relative file path."
+          },
+          "start_line": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "end_line": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "side": {
+            "type": "string",
+            "enum": ["LEFT", "RIGHT"],
+            "default": "RIGHT"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "info"]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          }
+        }
+      }
+    }
+  }
+}

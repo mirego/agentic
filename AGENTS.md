@@ -13,8 +13,14 @@ agentic/
 │   ├── CHANGELOG.md
 │   ├── .apm/prompts/            # Prompts distribués par APM
 │   └── templates/               # Templates make doctor / make check
+├── .github/
+│   ├── actions/setup-harness/   # Action composite : install Pi + models.json Forra
+│   ├── ai/                      # Prompts, schemas et scripts CI Pi
+│   └── workflows/               # Workflows réutilisables review / maintenance
 ├── docs/
-│   └── onboarding.md            # Guide d'accompagnement APM (prompt auto-suffisant pour agents)
+│   ├── onboarding.md            # Guide d'accompagnement APM (prompt auto-suffisant pour agents)
+│   ├── ci.md                    # Guide des workflows CI Pi / Forra
+│   └── examples/ci/             # Exemples de workflows consommateurs
 └── [futurs packages]/
 ```
 
