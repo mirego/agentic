@@ -19,6 +19,12 @@ agentic/
 │   ├── CHANGELOG.md
 │   ├── .apm/prompts/            # Prompts distribués par APM (/a11y-audit, /a11y-fix, /a11y-review)
 │   └── .apm/skills/a11y-guides/ # Bibliothèque de guides WCAG embarquée
+├── testmo/                      # Package : Testmo (résultats CI + plans de test manuels)
+│   ├── apm.yml
+│   ├── README.md
+│   ├── CHANGELOG.md
+│   ├── .apm/skills/             # Skills /testmo-setup et /testmo-plan (scripts Node inclus)
+│   └── ci/                      # Brique CI (action GitHub + publish.sh), non déployée par APM
 ├── docs/
 │   └── onboarding.md            # Guide d'accompagnement APM (prompt auto-suffisant pour agents)
 └── [futurs packages]/

@@ -1,0 +1,65 @@
+name: 'Testmo Publish'
+description: 'Publishes JUnit XML results to Testmo, linked to the PR, commit and author. Never fails the build.'
+
+inputs:
+  token:
+    description: 'Testmo API key (secret). When empty, publishing is skipped with a warning.'
+    required: false
+    default: ''
+  results:
+    description: 'Glob of the JUnit XML result files (quoted globs support **)'
+    required: true
+  source:
+    description: 'Testmo source, one per suite (e.g. backend-unit, ios-unit)'
+    required: true
+  config-file:
+    description: 'Path to the project configuration (instance, project_id)'
+    required: false
+    default: '.testmo.json'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node for the Testmo CLI
+      if: inputs.token != ''
+      uses: actions/setup-node@v7
+      with:
+        node-version: '22'
+
+    - name: Publish to Testmo
+      shell: bash
+      env:
+        TESTMO_TOKEN: ${{ inputs.token }}
+        TESTMO_RESULTS: ${{ inputs.results }}
+        TESTMO_SOURCE: ${{ inputs.source }}
+        TESTMO_CONFIG: ${{ inputs.config-file }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        TESTMO_TRIGGERED_BY: ${{ github.actor }}
+        REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
+        RUN_ATTEMPT: ${{ github.run_attempt }}
+      run: |
+        commit="${PR_HEAD_SHA:-$GITHUB_SHA}"
+        branch="${PR_HEAD_REF:-$GITHUB_REF_NAME}"
+
+        if [ -n "$PR_NUMBER" ]; then
+          export TESTMO_RUN_NAME="PR #${PR_NUMBER} — ${PR_TITLE}"
+          export TESTMO_TAGS="pr"
+          export TESTMO_CHANGE_URL="$PR_URL"
+          export TESTMO_CHANGE_AUTHOR="$PR_AUTHOR"
+        else
+          export TESTMO_RUN_NAME="${branch} @ ${commit:0:7}"
+          export TESTMO_TAGS="$(echo "$branch" | tr '/:' '--')"
+        fi
+
+        export TESTMO_COMMIT="$commit"
+        export TESTMO_BRANCH="$branch"
+        export TESTMO_COMMIT_URL="${REPO_URL}/commit/${commit}"
+        export TESTMO_BUILD_URL="${REPO_URL}/actions/runs/${RUN_ID}/attempts/${RUN_ATTEMPT}"
+
+        "${{ github.action_path }}/publish.sh"

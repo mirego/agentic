@@ -108,6 +108,28 @@ dependencies:
     - mirego/agentic/accessibility-fixer#v1.3.0
 ```
 
+#### `testmo` — Tests automatisés et plans de test manuels dans Testmo
+
+Publie les résultats des tests automatisés dans [Testmo](https://www.testmo.com) à chaque exécution CI, et tient le plan de test manuel à jour avec la codebase. Web ou mobile, toute stack.
+
+| Commande | Description |
+|----------|-------------|
+| `/testmo-setup` | Intégrer un projet : reporters JUnit, publication CI, `.testmo.json`, journal. `--dry-run` sans écriture |
+| `/testmo-plan` | Générer ou réconcilier le plan de test manuel (produit, PR, branche, ticket, spec), avec approbation avant écriture et trace sur chaque cas |
+
+```
+/testmo-setup  →  CI publie chaque run  →  /testmo-plan product  →  /testmo-plan pr:<n> à chaque changement
+```
+
+La brique CI s'utilise aussi seule : `uses: mirego/agentic/testmo/ci@v1.4.0` sur GitHub Actions, ou `publish.sh` pour toute autre CI. Voir le [README du package](testmo/README.md).
+
+```yaml
+# apm.yml
+dependencies:
+  apm:
+    - mirego/agentic/testmo#v1.4.0
+```
+
 ### Packages APM locaux
 
 Skills propres à un projet, structurés comme mini-packages APM :
