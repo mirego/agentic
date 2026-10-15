@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.0 — 2026-10-15
+
+Aucun changement.
+
 ## v1.3.0 — 2026-10-06
 
 Première version du package accessibility-fixer.

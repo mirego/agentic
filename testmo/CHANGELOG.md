@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.4.0 — non publiée
+## v1.4.0 — 2026-10-15
 
 Première version du package testmo, issue d'une preuve de concept menée sur un projet Mirego (web, Elixir et Go).
 
