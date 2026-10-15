@@ -1,0 +1,26 @@
+name: testmo
+
+on:
+  pull_request:
+    paths:
+      - "testmo/**"
+      - ".github/workflows/testmo.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "testmo/**"
+      - ".github/workflows/testmo.yaml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Test the testmo package
+        run: node --test testmo/ci/*.test.mjs testmo/.apm/skills/testmo-plan/scripts/*.test.mjs
