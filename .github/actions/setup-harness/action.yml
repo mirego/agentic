@@ -1,0 +1,70 @@
+name: Setup Pi harness
+description: >
+  Install the Pi coding agent (1.x by default) and configure an isolated harness directory
+  with a Forra-compatible models.json. Suitable as a building block for custom
+  CI agent workflows.
+
+inputs:
+  pi-version:
+    description: >
+      npm version or semver range of @earendil-works/pi-coding-agent to install.
+      The default "^1" installs the latest 1.x release without an automatic
+      major upgrade.
+    required: false
+    default: "^1"
+  provider:
+    description: Provider name registered in models.json
+    required: false
+    default: forra
+  base-url:
+    description: OpenAI-compatible base URL for the provider
+    required: false
+    default: https://interne.scout.mirego.com/api/chat/openai_compatible
+  api-key-env:
+    description: >
+      Name of the environment variable that holds the provider API key.
+      The models.json entry will reference this variable. Leave empty when the
+      provider does not require a key.
+    required: false
+    default: FORRA_API_KEY
+  models-json:
+    description: >
+      Optional full models.json contents. When provided, the action writes this
+      file as-is instead of generating the default Forra configuration.
+    required: false
+    default: ""
+
+outputs:
+  config-dir:
+    description: Absolute path to the isolated Pi config directory
+    value: ${{ steps.configure.outputs.config-dir }}
+  models-json-path:
+    description: Absolute path to the written models.json
+    value: ${{ steps.configure.outputs.models-json-path }}
+  provider:
+    description: Configured provider name
+    value: ${{ steps.configure.outputs.provider }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install Pi
+      shell: bash
+      env:
+        PI_VERSION: ${{ inputs.pi-version }}
+      run: |
+        set -euo pipefail
+        npm install --global --ignore-scripts "@earendil-works/pi-coding-agent@${PI_VERSION}"
+        pi --version
+
+    - name: Configure harness
+      id: configure
+      shell: bash
+      env:
+        PROVIDER: ${{ inputs.provider }}
+        BASE_URL: ${{ inputs.base-url }}
+        API_KEY_ENV: ${{ inputs.api-key-env }}
+        MODELS_JSON: ${{ inputs.models-json }}
+      run: |
+        set -euo pipefail
+        bash "${GITHUB_ACTION_PATH}/scripts/configure-harness.sh"

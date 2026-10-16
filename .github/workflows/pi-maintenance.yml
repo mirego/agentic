@@ -1,0 +1,294 @@
+name: Pi maintenance
+
+on:
+  workflow_call:
+    inputs:
+      prompt:
+        description: Inline maintenance prompt. Ignored when prompt-file is set.
+        type: string
+        required: false
+        default: ""
+      prompt-file:
+        description: >
+          Path to a prompt file relative to the agentic toolkit root, or
+          `caller:relative/path.md` for a file in the caller repository.
+        type: string
+        required: false
+        default: ""
+      task-title:
+        description: Short label included in agent runtime instructions
+        type: string
+        required: false
+        default: Scheduled maintenance
+      model:
+        description: Pi model identifier (provider/model)
+        type: string
+        required: false
+        default: forra/gpt-5.6-terra
+      thinking-level:
+        description: Pi thinking level
+        type: string
+        required: false
+        default: high
+      provider:
+        description: Provider name configured by setup-harness
+        type: string
+        required: false
+        default: forra
+      base-url:
+        description: OpenAI-compatible provider base URL
+        type: string
+        required: false
+        default: https://interne.scout.mirego.com/api/chat/openai_compatible
+      api-key-env:
+        description: Environment variable name holding the provider API key
+        type: string
+        required: false
+        default: FORRA_API_KEY
+      pi-version:
+        description: Pi coding agent npm version or semver range (default "^1")
+        type: string
+        required: false
+        default: "^1"
+      branch-prefix:
+        description: >
+          Branch used for the maintenance PR. The name is fixed, so later runs
+          update the same branch and PR.
+        type: string
+        required: false
+        default: ai/maintenance
+      base-branch:
+        description: Base branch for the maintenance PR
+        type: string
+        required: false
+        default: main
+      validation-command:
+        description: >
+          Optional shell command used to validate the generated changes. It runs
+          in the agent job, which has no GitHub write token.
+        type: string
+        required: false
+        default: ""
+      allowed-path-regex:
+        description: Regex that every changed path must match
+        type: string
+        required: false
+        default: "."
+      denied-path-regex:
+        description: Regex of paths that must not be changed
+        type: string
+        required: false
+        default: "^\\.github/workflows/"
+      tools:
+        description: Comma-separated Pi tool allowlist
+        type: string
+        required: false
+        default: read,grep,find,ls,bash,edit,write
+      runs-on:
+        description: Runner label
+        type: string
+        required: false
+        default: ubuntu-latest
+      toolkit-ref:
+        description: Optional git ref of mirego/agentic for prompts/scripts
+        type: string
+        required: false
+        default: ""
+      commit-user-name:
+        description: Git author name for maintenance commits
+        type: string
+        required: false
+        default: agentic-bot
+      commit-user-email:
+        description: Git author email for maintenance commits
+        type: string
+        required: false
+        default: agentic-bot@users.noreply.github.com
+    secrets:
+      FORRA_API_KEY:
+        required: false
+      PROVIDER_API_KEY:
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pi-maintenance-${{ github.repository }}-${{ inputs.branch-prefix }}
+  cancel-in-progress: false
+
+jobs:
+  maintenance-agent:
+    name: Run Pi maintenance agent
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    outputs:
+      has-patch: ${{ steps.package.outputs.has-patch }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ inputs.base-branch }}
+
+      - name: Checkout agentic toolkit
+        uses: actions/checkout@v4
+        with:
+          repository: mirego/agentic
+          ref: ${{ inputs.toolkit-ref != '' && inputs.toolkit-ref || job.workflow_sha }}
+          path: .agentic-toolkit
+          persist-credentials: false
+
+      - name: Ignore toolkit path in git
+        run: |
+          set -euo pipefail
+          mkdir -p .git/info
+          echo ".agentic-toolkit/" >> .git/info/exclude
+
+      - name: Setup harness
+        uses: ./.agentic-toolkit/.github/actions/setup-harness
+        with:
+          pi-version: ${{ inputs.pi-version }}
+          provider: ${{ inputs.provider }}
+          base-url: ${{ inputs.base-url }}
+          api-key-env: ${{ inputs.api-key-env }}
+
+      - name: Resolve prompt
+        id: prompt
+        env:
+          INLINE_PROMPT: ${{ inputs.prompt }}
+          PROMPT_FILE: ${{ inputs.prompt-file }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/pi-maintenance"
+          resolved="${RUNNER_TEMP}/pi-maintenance/prompt.md"
+
+          if [[ -n "${PROMPT_FILE}" ]]; then
+            if [[ "${PROMPT_FILE}" == caller:* ]]; then
+              source_path="${GITHUB_WORKSPACE}/${PROMPT_FILE#caller:}"
+            else
+              source_path="${GITHUB_WORKSPACE}/.agentic-toolkit/${PROMPT_FILE}"
+            fi
+            if [[ ! -f "${source_path}" ]]; then
+              echo "Prompt file not found: ${source_path}" >&2
+              exit 1
+            fi
+            cp "${source_path}" "${resolved}"
+          elif [[ -n "${INLINE_PROMPT}" ]]; then
+            printf '%s\n' "${INLINE_PROMPT}" > "${resolved}"
+          else
+            echo "Either prompt or prompt-file must be provided" >&2
+            exit 1
+          fi
+
+          echo "path=${resolved}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run Pi maintenance
+        env:
+          FORRA_API_KEY: ${{ secrets.FORRA_API_KEY }}
+          PROVIDER_API_KEY: ${{ secrets.PROVIDER_API_KEY }}
+          PROMPT_FILE: ${{ steps.prompt.outputs.path }}
+          OUTPUT_FILE: ${{ runner.temp }}/pi-maintenance/result.json
+          PATCH_FILE: ${{ runner.temp }}/pi-maintenance/changes.patch
+          MODEL: ${{ inputs.model }}
+          THINKING_LEVEL: ${{ inputs.thinking-level }}
+          TOOLS: ${{ inputs.tools }}
+          VALIDATION_COMMAND: ${{ inputs.validation-command }}
+          TASK_TITLE: ${{ inputs.task-title }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${FORRA_API_KEY:-}" && -n "${PROVIDER_API_KEY:-}" ]]; then
+            export FORRA_API_KEY="${PROVIDER_API_KEY}"
+          fi
+          if [[ "${{ inputs.api-key-env }}" != "FORRA_API_KEY" && -n "${PROVIDER_API_KEY:-}" ]]; then
+            export "${{ inputs.api-key-env }}=${PROVIDER_API_KEY}"
+          fi
+          bash .agentic-toolkit/.github/ai/scripts/run-pi-maintenance.sh
+
+      # Runs agent-written code: keep it in this job (read-only token, no
+      # persisted credentials, no provider secret in this step).
+      - name: Validate changes
+        if: ${{ inputs.validation-command != '' }}
+        env:
+          VALIDATION_COMMAND: ${{ inputs.validation-command }}
+        run: |
+          set -euo pipefail
+          echo "Running validation command: ${VALIDATION_COMMAND}"
+          bash -lc "${VALIDATION_COMMAND}"
+
+      - name: Package artifacts
+        id: package
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/pi-maintenance/artifact"
+          cp "${RUNNER_TEMP}/pi-maintenance/result.json" "${RUNNER_TEMP}/pi-maintenance/artifact/"
+          cp "${RUNNER_TEMP}/pi-maintenance/changes.patch" "${RUNNER_TEMP}/pi-maintenance/artifact/"
+          if [[ -s "${RUNNER_TEMP}/pi-maintenance/changes.patch" ]]; then
+            echo "has-patch=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "has-patch=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Upload maintenance artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pi-maintenance-${{ github.run_id }}
+          path: ${{ runner.temp }}/pi-maintenance/artifact/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-pr:
+    name: Publish maintenance pull request
+    needs: maintenance-agent
+    if: ${{ needs.maintenance-agent.outputs.has-patch == 'true' }}
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # No persisted credentials: the token goes only to the publish step,
+      # which passes it to git push / gh and runs no repository code.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.base-branch }}
+          persist-credentials: false
+
+      - name: Checkout agentic toolkit
+        uses: actions/checkout@v4
+        with:
+          repository: mirego/agentic
+          ref: ${{ inputs.toolkit-ref != '' && inputs.toolkit-ref || job.workflow_sha }}
+          path: .agentic-toolkit
+          persist-credentials: false
+
+      - name: Ignore toolkit path in git
+        run: |
+          set -euo pipefail
+          mkdir -p .git/info
+          echo ".agentic-toolkit/" >> .git/info/exclude
+
+      - name: Download maintenance artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pi-maintenance-${{ github.run_id }}
+          path: ${{ runner.temp }}/pi-maintenance/artifact
+
+      - name: Publish pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT_FILE: ${{ runner.temp }}/pi-maintenance/artifact/result.json
+          PATCH_FILE: ${{ runner.temp }}/pi-maintenance/artifact/changes.patch
+          BRANCH_PREFIX: ${{ inputs.branch-prefix }}
+          BASE_BRANCH: ${{ inputs.base-branch }}
+          ALLOWED_PATH_REGEX: ${{ inputs.allowed-path-regex }}
+          DENIED_PATH_REGEX: ${{ inputs.denied-path-regex }}
+          COMMIT_USER_NAME: ${{ inputs.commit-user-name }}
+          COMMIT_USER_EMAIL: ${{ inputs.commit-user-email }}
+        run: bash .agentic-toolkit/.github/ai/scripts/publish-maintenance-pr.sh

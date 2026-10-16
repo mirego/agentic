@@ -1,0 +1,30 @@
+# Example consumer workflow — scheduled dependency maintenance.
+# Copy into your repository as .github/workflows/ai-dependency-updates.yml
+name: AI dependency updates
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ai-dependency-updates
+  cancel-in-progress: false
+
+jobs:
+  updates:
+    uses: mirego/agentic/.github/workflows/pi-dependency-updates.yml@v1.0.0
+    with:
+      base-branch: main
+      branch-prefix: ai/dependency-updates
+      # Prefer a tech-agnostic validation entrypoint when available.
+      validation-command: |
+        if [ -f Makefile ] && grep -q '^check:' Makefile; then
+          make check
+        fi
+    secrets:
+      FORRA_API_KEY: ${{ secrets.FORRA_API_KEY }}

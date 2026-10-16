@@ -1,0 +1,290 @@
+name: Pi PR review
+
+on:
+  workflow_call:
+    inputs:
+      prompt:
+        description: Inline review prompt. Ignored when prompt-file is set.
+        type: string
+        required: false
+        default: ""
+      prompt-file:
+        description: >
+          Path to a prompt file, relative to the agentic toolkit root
+          (for bundled prompts) or the caller repository root when the path
+          starts with `caller:`.
+        type: string
+        required: false
+        default: ""
+      profile-name:
+        description: Stable profile identifier used for comment markers/dedupe
+        type: string
+        required: false
+        default: custom
+      model:
+        description: Pi model identifier (provider/model)
+        type: string
+        required: false
+        default: forra/gpt-5.6-terra
+      thinking-level:
+        description: Pi thinking level
+        type: string
+        required: false
+        default: high
+      provider:
+        description: Provider name configured by setup-harness
+        type: string
+        required: false
+        default: forra
+      base-url:
+        description: OpenAI-compatible provider base URL
+        type: string
+        required: false
+        default: https://interne.scout.mirego.com/api/chat/openai_compatible
+      api-key-env:
+        description: Environment variable name holding the provider API key
+        type: string
+        required: false
+        default: FORRA_API_KEY
+      pi-version:
+        description: Pi coding agent npm version or semver range (default "^1")
+        type: string
+        required: false
+        default: "^1"
+      include-paths:
+        description: Comma-separated path patterns to include in the review diff
+        type: string
+        required: false
+        default: ""
+      exclude-paths:
+        description: Comma-separated path patterns to exclude from the review diff
+        type: string
+        required: false
+        default: ""
+      severity-threshold:
+        description: Minimum severity to publish (critical|high|medium|low|info)
+        type: string
+        required: false
+        default: medium
+      max-findings:
+        description: Maximum findings to publish
+        type: string
+        required: false
+        default: "25"
+      max-diff-bytes:
+        description: Maximum diff size included in the agent context
+        type: string
+        required: false
+        default: "500000"
+      review-event:
+        description: GitHub review event type (COMMENT|APPROVE|REQUEST_CHANGES)
+        type: string
+        required: false
+        default: COMMENT
+      runs-on:
+        description: Runner label
+        type: string
+        required: false
+        default: ubuntu-latest
+      toolkit-ref:
+        description: >
+          Optional git ref of mirego/agentic to load prompts/scripts from.
+          Defaults to the reusable workflow commit (job.workflow_sha).
+        type: string
+        required: false
+        default: ""
+    secrets:
+      FORRA_API_KEY:
+        description: API key for the Forra provider (or the configured api-key-env)
+        required: false
+      PROVIDER_API_KEY:
+        description: Alias secret when api-key-env is not FORRA_API_KEY
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pi-pr-review-${{ github.repository }}-${{ github.event.pull_request.number || github.ref }}-${{ inputs.profile-name }}
+  cancel-in-progress: true
+
+jobs:
+  review-agent:
+    name: Run Pi review agent
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      head-sha: ${{ steps.context.outputs.head-sha }}
+      has-findings-artifact: ${{ steps.package.outputs.has-findings-artifact }}
+    steps:
+      - name: Ensure pull_request context
+        if: ${{ github.event_name != 'pull_request' && github.event_name != 'pull_request_target' }}
+        run: |
+          echo "pi-pr-review must be triggered from a pull_request workflow" >&2
+          exit 1
+
+      - name: Checkout pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Checkout agentic toolkit
+        uses: actions/checkout@v4
+        with:
+          repository: mirego/agentic
+          ref: ${{ inputs.toolkit-ref != '' && inputs.toolkit-ref || job.workflow_sha }}
+          path: .agentic-toolkit
+          persist-credentials: false
+
+      - name: Ignore toolkit path in git
+        run: |
+          set -euo pipefail
+          mkdir -p .git/info
+          echo ".agentic-toolkit/" >> .git/info/exclude
+
+      - name: Setup harness
+        uses: ./.agentic-toolkit/.github/actions/setup-harness
+        with:
+          pi-version: ${{ inputs.pi-version }}
+          provider: ${{ inputs.provider }}
+          base-url: ${{ inputs.base-url }}
+          api-key-env: ${{ inputs.api-key-env }}
+
+      - name: Resolve prompt
+        id: prompt
+        env:
+          INLINE_PROMPT: ${{ inputs.prompt }}
+          PROMPT_FILE: ${{ inputs.prompt-file }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/pi-review"
+          resolved="${RUNNER_TEMP}/pi-review/prompt.md"
+
+          if [[ -n "${PROMPT_FILE}" ]]; then
+            if [[ "${PROMPT_FILE}" == caller:* ]]; then
+              source_path="${GITHUB_WORKSPACE}/${PROMPT_FILE#caller:}"
+            else
+              source_path="${GITHUB_WORKSPACE}/.agentic-toolkit/${PROMPT_FILE}"
+            fi
+            if [[ ! -f "${source_path}" ]]; then
+              echo "Prompt file not found: ${source_path}" >&2
+              exit 1
+            fi
+            cp "${source_path}" "${resolved}"
+          elif [[ -n "${INLINE_PROMPT}" ]]; then
+            printf '%s\n' "${INLINE_PROMPT}" > "${resolved}"
+          else
+            echo "Either prompt or prompt-file must be provided" >&2
+            exit 1
+          fi
+
+          echo "path=${resolved}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build PR context
+        id: context
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/pi-review/context
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          INCLUDE_PATHS: ${{ inputs.include-paths }}
+          EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+          MAX_DIFF_BYTES: ${{ inputs.max-diff-bytes }}
+        run: bash .agentic-toolkit/.github/ai/scripts/build-pr-context.sh
+
+      - name: Run Pi review
+        env:
+          FORRA_API_KEY: ${{ secrets.FORRA_API_KEY }}
+          PROVIDER_API_KEY: ${{ secrets.PROVIDER_API_KEY }}
+          PROMPT_FILE: ${{ steps.prompt.outputs.path }}
+          CONTEXT_FILE: ${{ steps.context.outputs.context-file }}
+          OUTPUT_FILE: ${{ runner.temp }}/pi-review/findings.json
+          MODEL: ${{ inputs.model }}
+          THINKING_LEVEL: ${{ inputs.thinking-level }}
+          MAX_FINDINGS: ${{ inputs.max-findings }}
+          SEVERITY_THRESHOLD: ${{ inputs.severity-threshold }}
+        run: |
+          set -euo pipefail
+          # Support either FORRA_API_KEY or PROVIDER_API_KEY depending on api-key-env.
+          if [[ -z "${FORRA_API_KEY:-}" && -n "${PROVIDER_API_KEY:-}" ]]; then
+            export FORRA_API_KEY="${PROVIDER_API_KEY}"
+          fi
+          if [[ "${{ inputs.api-key-env }}" != "FORRA_API_KEY" && -n "${PROVIDER_API_KEY:-}" ]]; then
+            export "${{ inputs.api-key-env }}=${PROVIDER_API_KEY}"
+          fi
+          bash .agentic-toolkit/.github/ai/scripts/run-pi-review.sh
+
+      - name: Validate findings
+        env:
+          FINDINGS_FILE: ${{ runner.temp }}/pi-review/findings.json
+          DIFF_FILE: ${{ runner.temp }}/pi-review/context/diff.patch
+          OUTPUT_FILE: ${{ runner.temp }}/pi-review/validated.json
+          SEVERITY_THRESHOLD: ${{ inputs.severity-threshold }}
+          MAX_FINDINGS: ${{ inputs.max-findings }}
+        run: python3 .agentic-toolkit/.github/ai/scripts/validate-review-findings.py
+
+      - name: Package artifacts
+        id: package
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/pi-review/artifact"
+          cp "${RUNNER_TEMP}/pi-review/findings.json" "${RUNNER_TEMP}/pi-review/artifact/"
+          cp "${RUNNER_TEMP}/pi-review/validated.json" "${RUNNER_TEMP}/pi-review/artifact/"
+          cp "${RUNNER_TEMP}/pi-review/context/diff.patch" "${RUNNER_TEMP}/pi-review/artifact/"
+          cp "${RUNNER_TEMP}/pi-review/context/changed-files.txt" "${RUNNER_TEMP}/pi-review/artifact/"
+          printf '%s\n' "${{ steps.context.outputs.head-sha }}" > "${RUNNER_TEMP}/pi-review/artifact/head-sha.txt"
+          printf '%s\n' "${{ inputs.profile-name }}" > "${RUNNER_TEMP}/pi-review/artifact/profile-name.txt"
+          echo "has-findings-artifact=true" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pi-review-${{ inputs.profile-name }}-${{ github.event.pull_request.number }}
+          path: ${{ runner.temp }}/pi-review/artifact/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-review:
+    name: Publish PR review comments
+    needs: review-agent
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout agentic toolkit
+        uses: actions/checkout@v4
+        with:
+          repository: mirego/agentic
+          ref: ${{ inputs.toolkit-ref != '' && inputs.toolkit-ref || job.workflow_sha }}
+          path: .agentic-toolkit
+          persist-credentials: false
+
+      - name: Download review artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pi-review-${{ inputs.profile-name }}-${{ github.event.pull_request.number }}
+          path: ${{ runner.temp }}/pi-review/artifact
+
+      - name: Publish review
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ needs.review-agent.outputs.head-sha }}
+          PROFILE_NAME: ${{ inputs.profile-name }}
+          VALIDATED_FILE: ${{ runner.temp }}/pi-review/artifact/validated.json
+          REVIEW_EVENT: ${{ inputs.review-event }}
+        run: python3 .agentic-toolkit/.github/ai/scripts/publish-review.py

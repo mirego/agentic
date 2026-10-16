@@ -1,0 +1,75 @@
+name: Pi dependency updates
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        description: Pi model identifier
+        type: string
+        required: false
+        default: forra/gpt-5.6-terra
+      thinking-level:
+        description: Pi thinking level
+        type: string
+        required: false
+        default: high
+      base-branch:
+        description: Base branch for the maintenance PR
+        type: string
+        required: false
+        default: main
+      branch-prefix:
+        description: Fixed branch name for the maintenance PR (later runs update it)
+        type: string
+        required: false
+        default: ai/dependency-updates
+      validation-command:
+        description: Optional validation command, run in the agent job after applying updates
+        type: string
+        required: false
+        default: ""
+      allowed-path-regex:
+        description: Regex that every changed path must match
+        type: string
+        required: false
+        default: "."
+      denied-path-regex:
+        description: Regex of paths that must not be changed
+        type: string
+        required: false
+        default: "^\\.github/workflows/"
+      runs-on:
+        description: Runner label
+        type: string
+        required: false
+        default: ubuntu-latest
+      toolkit-ref:
+        description: Optional agentic toolkit ref override
+        type: string
+        required: false
+        default: ""
+    secrets:
+      FORRA_API_KEY:
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  maintenance:
+    uses: ./.github/workflows/pi-maintenance.yml
+    with:
+      prompt-file: .github/ai/prompts/dependency-updates.md
+      task-title: Dependency updates
+      model: ${{ inputs.model }}
+      thinking-level: ${{ inputs.thinking-level }}
+      base-branch: ${{ inputs.base-branch }}
+      branch-prefix: ${{ inputs.branch-prefix }}
+      validation-command: ${{ inputs.validation-command }}
+      allowed-path-regex: ${{ inputs.allowed-path-regex }}
+      denied-path-regex: ${{ inputs.denied-path-regex }}
+      runs-on: ${{ inputs.runs-on }}
+      toolkit-ref: ${{ inputs.toolkit-ref }}
+    secrets:
+      FORRA_API_KEY: ${{ secrets.FORRA_API_KEY }}

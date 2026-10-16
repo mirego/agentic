@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mirego/agentic/schemas/maintenance-result.schema.json",
+  "title": "Pi maintenance result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "has_changes", "title", "body"],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "has_changes": {
+      "type": "boolean"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "draft": {
+      "type": "boolean",
+      "default": true
+    },
+    "changed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    }
+  }
+}

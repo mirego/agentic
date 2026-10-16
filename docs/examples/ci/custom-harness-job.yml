@@ -1,0 +1,56 @@
+# Example consumer workflow — lowest-level composition with setup-harness.
+# Useful when you need a fully custom agent job outside the generic engines.
+name: Custom Pi harness job
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: Prompt to send to Pi
+        required: true
+        default: Summarize the architecture of this repository.
+
+permissions:
+  contents: read
+
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Checkout agentic toolkit
+        uses: actions/checkout@v4
+        with:
+          repository: mirego/agentic
+          ref: v1.0.0
+          path: .agentic-toolkit
+          persist-credentials: false
+
+      - name: Setup Pi harness
+        uses: ./.agentic-toolkit/.github/actions/setup-harness
+        with:
+          pi-version: "^1"
+          provider: forra
+          base-url: https://interne.scout.mirego.com/api/chat/openai_compatible
+          api-key-env: FORRA_API_KEY
+
+      - name: Run Pi
+        env:
+          FORRA_API_KEY: ${{ secrets.FORRA_API_KEY }}
+          # Pass inputs through env, never inline them in the script.
+          PROMPT: ${{ inputs.prompt }}
+        run: |
+          set -euo pipefail
+          pi \
+            --no-session \
+            --no-context-files \
+            --no-approve \
+            --no-mcp \
+            --model forra/gpt-5.6-terra \
+            --thinking high \
+            --tools read,grep,find,ls \
+            -p "$PROMPT"

@@ -1,0 +1,69 @@
+name: Pi performance review
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        description: Pi model identifier
+        type: string
+        required: false
+        default: forra/gpt-5.6-terra
+      thinking-level:
+        description: Pi thinking level
+        type: string
+        required: false
+        default: high
+      severity-threshold:
+        description: Minimum severity to publish
+        type: string
+        required: false
+        default: medium
+      include-paths:
+        description: Comma-separated include path patterns
+        type: string
+        required: false
+        default: ""
+      exclude-paths:
+        description: Comma-separated exclude path patterns
+        type: string
+        required: false
+        default: ""
+      max-findings:
+        description: Maximum findings to publish
+        type: string
+        required: false
+        default: "25"
+      runs-on:
+        description: Runner label
+        type: string
+        required: false
+        default: ubuntu-latest
+      toolkit-ref:
+        description: Optional agentic toolkit ref override
+        type: string
+        required: false
+        default: ""
+    secrets:
+      FORRA_API_KEY:
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    uses: ./.github/workflows/pi-pr-review.yml
+    with:
+      prompt-file: .github/ai/prompts/performance-review.md
+      profile-name: performance
+      model: ${{ inputs.model }}
+      thinking-level: ${{ inputs.thinking-level }}
+      severity-threshold: ${{ inputs.severity-threshold }}
+      include-paths: ${{ inputs.include-paths }}
+      exclude-paths: ${{ inputs.exclude-paths }}
+      max-findings: ${{ inputs.max-findings }}
+      runs-on: ${{ inputs.runs-on }}
+      toolkit-ref: ${{ inputs.toolkit-ref }}
+    secrets:
+      FORRA_API_KEY: ${{ secrets.FORRA_API_KEY }}

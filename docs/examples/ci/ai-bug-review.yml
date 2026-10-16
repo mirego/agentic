@@ -1,0 +1,21 @@
+# Example consumer workflow — copy into your repository as
+# .github/workflows/ai-bug-review.yml
+name: AI bug review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ai-bug-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    uses: mirego/agentic/.github/workflows/pi-bug-review.yml@v1.0.0
+    secrets:
+      FORRA_API_KEY: ${{ secrets.FORRA_API_KEY }}
