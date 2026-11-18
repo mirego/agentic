@@ -11,7 +11,7 @@ agentic/
 │   ├── apm.yml
 │   ├── README.md
 │   ├── CHANGELOG.md
-│   ├── .apm/prompts/            # Prompts distribués par APM
+│   ├── .apm/skills/             # Skills /spec-workflow, /initiative, /spec, /impl
 │   └── templates/               # Templates make doctor / make check
 ├── accessibility-fixer/         # Package : audits et correctifs d'accessibilité WCAG 2.2
 │   ├── apm.yml
@@ -35,7 +35,7 @@ agentic/
 ### Langue
 
 - **Documentation** (README, CHANGELOG, AGENTS.md) : français
-- **Prompts** (.prompt.md) : français pour le contenu généré, anglais acceptable dans les blocs de code
+- **Instructions des skills et prompts** : anglais (moins de tokens, cohérent avec les noms d'outils). Le contenu généré suit la section Langue de l'`AGENTS.md` du projet consommateur. `accessibility-fixer` et `testmo` sont encore en français et migreront lors de leur prochaine réécriture
 - **Commits** : français
 
 ### Créer un nouveau package
@@ -73,6 +73,15 @@ allowed-tools: Read, Glob, Grep, Bash, Write, Edit, Task, AskUserQuestion
 - `description` est obligatoire — les agents l'utilisent pour l'auto-invocation
 - `argument-hint` est recommandé pour guider l'utilisateur
 - `allowed-tools` est recommandé pour les prompts qui utilisent des outils spécifiques
+
+### Skills
+
+Préférer un skill (`.apm/skills/<nom>/SKILL.md`) à un prompt : le contenu détaillé va dans `references/`, chargé seulement au besoin. APM déploie le frontmatter tel quel.
+
+- `name` (kebab-case, = nom du dossier) et `description` (troisième personne, dit quoi faire et quand) sont obligatoires
+- `disable-model-invocation: true` pour les skills à effets de bord (branches, commits, PRs) : ils ne démarrent que sur demande explicite
+- Décrire l'objectif et les contrats plutôt que la procédure, expliquer le pourquoi des règles, éviter le ton impératif (MUST, JAMAIS en gras) : les modèles récents appliquent alors la règle trop largement
+- Les règles qui ne tolèrent aucune exception vont dans des protections réelles (permissions, protection de branche), pas seulement dans le prompt
 
 ### Tech-agnosticisme
 
