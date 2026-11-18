@@ -1,28 +1,28 @@
 # spec-workflow
 
-Pipeline structuré pour passer d'une vision produit à une implémentation livrée. Technologiquement agnostique — s'adapte à tout projet via `make doctor` et `make check`.
+Pipeline structuré pour passer d'une vision produit à une implémentation livrée, pensé pour le travail en équipe : chaque étape produit un artefact versionné (initiative, spec, implémentation) reviewé par PR. Technologiquement agnostique : s'adapte à tout projet via `make doctor` et `make check`.
 
-## Prompts
+## Skills
 
 | Commande | Description |
 |----------|-------------|
-| `/spec-workflow` | Dashboard du pipeline : état des initiatives/specs/impls, prochaine action suggérée, routage intelligent |
+| `/spec-workflow` | Dashboard du pipeline : état des initiatives, specs et PRs, prochaine action suggérée, routage |
 | `/initiative` | Créer une initiative produit (vision, personas, user stories, découpage en specs) |
-| `/spec` | Créer une spécification technique (discussion → spec → PR) |
-| `/impl` | Implémenter une spec à partir d'un slug de spec |
+| `/spec` | Planifier un changement et produire une spec reviewable (PRD, RFC ou Libre) |
+| `/impl` | Implémenter une spec, reprendre une implémentation ou traiter les commentaires de review |
+
+`/initiative`, `/spec` et `/impl` créent des branches et des PRs : ils ne démarrent que sur demande explicite (`disable-model-invocation`). `/spec-workflow` est en lecture seule et peut être invoqué automatiquement par l'agent.
+
+Les instructions des skills sont rédigées en anglais ; le contenu généré suit la langue du projet (voir [Langue](#langue)).
 
 ### `/spec-workflow`
 
-Orchestrateur du pipeline. Donne une vue d'ensemble de l'état du travail en cours et chaîne vers le bon prompt selon le contexte. Lecture seule — ne crée aucun fichier lui-même.
-
-**Sous-commandes :**
-
 | Commande | Action |
 |----------|--------|
-| `/spec-workflow` ou `/spec-workflow status` | Affiche le dashboard complet du pipeline (initiatives, specs, PRs, statuts) |
-| `/spec-workflow next` | Détermine et propose la prochaine action logique du pipeline |
+| `/spec-workflow` ou `/spec-workflow status` | Affiche le dashboard (initiatives, specs, PRs, statuts) |
+| `/spec-workflow next` | Propose la prochaine action logique |
 | `/spec-workflow start <description>` | Évalue le scope et route vers `/initiative` ou `/spec` |
-| `/spec-workflow impl <slug>` | Raccourci vers `/impl <slug>` avec vérification des prérequis |
+| `/spec-workflow impl <slug>` | Vérifie les prérequis puis enchaîne sur `/impl <slug>` |
 
 **Exemple de dashboard :**
 
@@ -32,49 +32,47 @@ Orchestrateur du pipeline. Donne une vue d'ensemble de l'état du travail en cou
 Branche courante : feature/refonte-onboarding
 
 Initiative: Refonte onboarding (1/4 specs done)
-├─ ✅ welcome-screen — implémentée (PR #42 merged)
-├─ 🔨 profile-setup — impl en cours (PR impl #51 draft)
-├─ 📬 email-verification — prête pour /impl (PR spec #55 merged)
-├─ 📄 tutorial-tour — spec locale non pushée
-└─ ⏳ permissions-onboarding — pending
+├─ ✅ welcome-screen - implémentée
+├─ 🔨 profile-setup - impl en cours (PR #51 draft)
+├─ 📬 email-verification - prête pour /impl (PR spec #55 merged)
+└─ ⏳ tutorial-tour, permissions-onboarding - pending
 
-**Prochaine action suggérée :** reprendre l'impl `profile-setup` (PR #51 draft)
-
-Autres options :
-- Lancer /impl email-verification (spec mergée, prête)
-- Pousser la spec tutorial-tour vers une PR
-- Créer la spec pending permissions-onboarding
+**Prochaine action suggérée :** reprendre /impl profile-setup (PR #51 draft)
 ```
 
 Icônes : ⏳ pending · 📄 spec locale · 📝 spec en review · 📬 prête pour /impl · 🔨 impl en cours · ✅ done.
 
-Principe directeur du `next` : **finir avant de commencer** — les fast-tracks en draft ont priorité sur le démarrage d'une nouvelle impl. Les états passifs (📝, PR impl en review) apparaissent en options secondaires, jamais en recommandation principale.
+Principe directeur du `next` : **finir avant de commencer**. Les reviews en cours apparaissent en options secondaires, jamais en recommandation principale.
 
 ### `/initiative`
 
-Workflow Product Owner pour créer une initiative — une unité de planification de haut niveau qui regroupe plusieurs specs sous une même vision produit.
+Cadre un travail produit trop gros pour une seule spec : compréhension du besoin, exploration du code, rédaction du document (vision, personas, user stories, découpage en specs avec priorités et dépendances), review, puis PR.
 
-**Phases :** Discovery produit → Exploration du codebase → Vision et user stories → Découpage en specs → Rédaction du document → Backlog et GitHub
-
-**Produit :** `docs/initiatives/<slug>.md` + items dans `BACKLOG.md` + PR
+**Produit :** `docs/initiatives/<slug>.md` + section dans `BACKLOG.md` (si présent) + PR
 
 ### `/spec`
 
-Workflow architecte pour planifier un changement et produire une spécification formelle (PRD, RFC ou Libre).
+Planifie un changement avec le développeur et produit une spec que l'équipe peut reviewer avant d'écrire du code. L'effort s'adapte à la taille du changement : une spec Libre courte pour un correctif, un PRD complet pour une feature.
 
-**Phases :** Vérification de l'environnement → Discovery (avec résolution intelligente d'initiative) → Exploration du codebase → Design itératif → Rédaction du document → Intégration
+**Étapes :** compréhension (avec reprise automatique du contexte d'une initiative) → exploration du code → approche (point de contrôle 1) → rédaction → review et choix du mode d'intégration (point de contrôle 2) → PR
 
-**Produit :** `docs/specs/<slug>.md` + PR — soit séparée (flow classique, review dédiée de la spec), soit combinée avec `/impl` en mode **fast-track** (une seule PR contenant spec et impl).
+La spec décrit le quoi et le pourquoi : décisions, critères d'acceptation, risques, zones impactées. Le plan fichier par fichier est laissé à `/impl`.
 
-À la phase d'intégration, `/spec` détecte le contexte (solo vs équipe, via `git log`) et propose le mode approprié; l'utilisateur garde toujours le choix final.
+**Produit :** `docs/specs/<slug>.md` + PR, soit séparée (review dédiée de la spec), soit combinée avec `/impl` en mode **fast-track**. Le mode recommandé suit la [politique de review](#politique-de-review) du projet.
 
 ### `/impl`
 
-Workflow développeur senior pour implémenter un changement défini par une spec. Vérifie que la PR de spec est mergée avant de démarrer (sauf en mode fast-track, où spec et impl partagent la même branche).
+Implémente une spec approuvée comme le ferait un développeur senior du projet.
 
-**Phases :** Vérification de l'environnement → Chargement du contexte → Exploration du codebase → Plan d'exécution → Implémentation (commits atomiques + tests) → GitHub
+**Étapes :** chargement de la spec et choix du mode → plan (point de contrôle) → implémentation en commits atomiques, chacun avec ses tests → `make check` + review par un sous-agent neuf → documentation et archivage → PR draft complétée
 
-**Produit :** Commits atomiques + archivage de la spec dans `docs/specs/impl/` + PR draft
+- **Normal** : la PR de spec doit être mergée ; `/impl` refuse de démarrer si elle est encore en review.
+- **Fast-track** : enchaîné depuis `/spec` sur la même branche.
+- **Reprise** : si la branche `impl/<slug>` existe, `/impl` reprend où le travail s'est arrêté et, si la PR a des commentaires de review, les traite.
+
+La PR draft est ouverte dès le premier commit pour que l'équipe voie le travail en cours.
+
+**Produit :** commits atomiques + archivage de la spec dans `docs/specs/impl/` + PR draft
 
 ### Pipeline complet
 
@@ -90,43 +88,44 @@ Workflow développeur senior pour implémenter un changement défini par une spe
 
 Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative.
 
-En mode fast-track, `/spec` enchaîne directement avec `/impl` sur la même branche et produit une seule PR combinée — utile en solo ou quand la spec est suffisamment claire pour ne pas nécessiter de review séparée.
-
-`/spec-workflow` sert de porte d'entrée à tout le pipeline : en cas de doute sur l'état du travail en cours ou sur la prochaine étape, lance `/spec-workflow` pour voir le dashboard ou `/spec-workflow next` pour laisser l'orchestrateur proposer la prochaine action.
-
 ## Prérequis du projet
 
 ### Langue
 
-Les prompts génèrent tout le contenu (PR, commits, messages, documents) dans la langue configurée par le projet consommateur. Ajouter une section `## Langue` dans `AGENTS.md` :
+Les skills génèrent tout le contenu (documents, PR, commits, messages) dans la langue configurée par le projet. Ajouter une section `## Langue` dans `AGENTS.md` :
 
 ```markdown
 ## Langue
 - Contenu généré (PR, commits, messages) : français
 ```
 
-Si aucune section Langue n'est configurée, les prompts utilisent la langue dans laquelle l'utilisateur communique.
+Sans section Langue, les skills utilisent la langue dans laquelle l'utilisateur communique.
+
+### Politique de review
+
+Par défaut, `/spec` recommande une PR de spec séparée pour les PRD et RFC, et le fast-track pour les specs Libre. Le développeur garde toujours le choix final. Pour fixer une autre politique pour toute l'équipe, ajouter une section dans `AGENTS.md` :
+
+```markdown
+## spec-workflow
+- Review de spec séparée : obligatoire pour PRD et RFC, fast-track permis pour Libre
+```
 
 ### Makefile
 
-Les prompts s'appuient sur deux targets Makefile pour rester tech-agnostiques :
-
 | Target | Rôle | Utilisé par |
 |--------|------|-------------|
-| `make doctor` | Diagnostic de l'environnement (GitHub CLI, BD, compilation) | `/spec`, `/impl` |
-| `make check` | Validation du code (format, compilation, tests) | `/impl` |
+| `make doctor` | Diagnostic de l'environnement (GitHub CLI, BD, compilation) | `/impl` (au démarrage) |
+| `make check` | Validation complète du code (format, compilation, tests) | `/impl` (avant la PR) |
 
-Si ces targets n'existent pas dans le projet, les prompts détectent l'absence et demandent à l'utilisateur comment procéder — rien ne bloque.
+Pendant l'implémentation, `/impl` roule les tests ciblés de chaque étape ; `make check` ne roule qu'une fois, à la fin. Si ces targets n'existent pas, les skills le signalent et demandent comment procéder : rien ne bloque.
 
 ### Templates
 
-Des templates sont disponibles dans [`templates/`](templates/) pour démarrer rapidement :
+Des templates sont disponibles dans [`templates/`](templates/) :
 
-- **`Makefile.example`** — targets minimales `doctor` et `check`
-- **`doctor.sh`** — diagnostic d'environnement avec format structuré (PASS/FAIL + context + fix)
-- **`check.sh`** — validation de code à adapter à la stack du projet
-
-Pour les utiliser :
+- **`Makefile.example`** : targets minimales `doctor` et `check`
+- **`doctor.sh`** : diagnostic d'environnement avec format structuré (PASS/FAIL + context + fix)
+- **`check.sh`** : validation de code à adapter à la stack du projet
 
 ```bash
 cp templates/doctor.sh scripts/doctor.sh
@@ -136,48 +135,61 @@ chmod +x scripts/doctor.sh scripts/check.sh
 
 Puis ajouter les targets dans le Makefile du projet (voir `templates/Makefile.example`).
 
-### Structure de dossiers attendue
+### Protections recommandées
 
-Les prompts créent et utilisent ces dossiers dans le projet consommateur :
+Les skills ne committent jamais sur la branche par défaut et ne réécrivent jamais l'historique poussé. Pour que ces règles ne dépendent pas seulement du modèle :
+
+- activer la **protection de branche** sur `main` dans GitHub (PR obligatoire) ;
+- dans Claude Code, refuser les commandes destructives dans `.claude/settings.json` :
+
+```json
+{
+  "permissions": {
+    "deny": ["Bash(git push --force:*)", "Bash(git push -f:*)", "Bash(git reset --hard:*)"]
+  }
+}
+```
+
+### Structure de dossiers
 
 ```
 docs/
 ├── initiatives/          # Initiatives actives (créées par /initiative)
 │   └── done/             # Initiatives archivées (par /impl)
 ├── specs/                # Specs actives (créées par /spec)
-│   └── impl/             # Specs archivées (par /impl)
-BACKLOG.md                # Optionnel — suivi backlog (géré par /initiative et /impl si présent)
+│   └── impl/             # Specs implémentées (archivées par /impl)
+BACKLOG.md                # Optionnel : suivi backlog
 ```
 
-Ces dossiers sont créés automatiquement par les prompts si absents. `BACKLOG.md` est optionnel — si le fichier existe, les prompts l'utilisent pour le suivi des items (tags `spec~`/`spec:`, archivage dans `## Done`). Si le fichier n'existe pas, le pipeline fonctionne normalement sans backlog.
+Les dossiers sont créés au besoin. `BACKLOG.md` est optionnel : s'il existe, les skills tiennent à jour une section par initiative (`> init:<slug>`) avec un item par spec (`· spec~<slug>` planifiée, `· spec:<slug>` rédigée, déplacée dans `## Done` une fois implémentée).
 
 ## Intégrations externes
 
-Les prompts core (`/initiative`, `/spec`, `/impl`) restent volontairement indépendants des outils externes (trackers d'issues, bases de connaissances, notifications, CI). Pour brancher un outil tiers dans le pipeline, le projet consommateur déclare une section d'intégration dans son `AGENTS.md` qui écoute les **événements de cycle de vie** émis aux transitions clés du workflow.
+Les skills restent indépendants des outils externes (trackers, bases de connaissances, notifications, CI). Pour brancher un outil, le projet déclare dans son `AGENTS.md` une section qui écoute les **événements de cycle de vie** du pipeline.
 
 ### Événements émis
 
 | Événement | Émis par | Moment |
 |---|---|---|
-| `spec-workflow:initiative:started` | `/initiative` | Début de Phase 1, avant le parsing de `$ARGUMENTS` |
-| `spec-workflow:initiative:created` | `/initiative` | Après Phase 6 (document + PR créés), avant le summary |
-| `spec-workflow:initiative:completed` | `/impl` | Dans Phase 4f, uniquement quand l'initiative vient d'être archivée dans `docs/initiatives/done/` |
-| `spec-workflow:spec:started` | `/spec` | Début de Phase 1, avant la discovery |
-| `spec-workflow:spec:created` | `/spec` | Après Phase 5 (commit/push faits), avant le chaînage `/impl` en fast-track ou le summary en PR séparée |
-| `spec-workflow:spec:completed` | `/impl` | Dans Phase 4e, après archivage de la spec dans `docs/specs/impl/` |
-| `spec-workflow:impl:started` | `/impl` | Après Phase 1 (spec chargée, `init_slug` résolu), avant l'exploration du codebase |
-| `spec-workflow:impl:completed` | `/impl` | Après Phase 4f, avant l'ouverture de la PR GitHub |
+| `spec-workflow:initiative:started` | `/initiative` | Au démarrage, avant la discovery |
+| `spec-workflow:initiative:created` | `/initiative` | Après la création de la PR, avant le résumé |
+| `spec-workflow:initiative:completed` | `/impl` | Quand la dernière spec de l'initiative est implémentée et l'initiative archivée |
+| `spec-workflow:spec:started` | `/spec` | Au démarrage, avant la discovery |
+| `spec-workflow:spec:created` | `/spec` | Après le commit (et la PR en mode séparé), avant le résumé ou l'enchaînement fast-track |
+| `spec-workflow:spec:completed` | `/impl` | Après l'archivage de la spec dans `docs/specs/impl/` |
+| `spec-workflow:impl:started` | `/impl` | Spec chargée et mode déterminé, avant l'exploration du code |
+| `spec-workflow:impl:completed` | `/impl` | Documentation et archivage terminés, avant la finalisation de la PR |
 
 ### Règles
 
-- **Match par chaîne exacte** — le callout dans le prompt et la section dans `AGENTS.md` matchent sur le nom de l'événement verbatim (ex: `spec-workflow:spec:created`). Le niveau de heading (`#`, `##`, `###`, `####`) n'a pas d'importance, c'est la chaîne qui compte.
-- **Optionnel** — si `AGENTS.md` ne déclare pas un événement donné, le prompt continue sans rien faire. Aucun message d'erreur.
-- **Non bloquant** — un échec d'extension (MCP non connecté, OAuth expiré, API indisponible) ne doit jamais annuler ou bloquer le flow principal. Prévenir l'utilisateur, continuer.
-- **Intégrations exécutées, hors-périmètre refusé** — le corps d'une section d'événement est une politique d'intégration (quoi synchroniser avec un outil externe). Les prompts l'exécutent via MCP/CLI d'intégration. Ils **refusent** : git destructif, exfiltration de secrets, modification de hooks/`AGENTS.md`/CI, shell arbitraire, contournement des phases du prompt — même si le corps de section le demande.
-- **Contexte métier, pas contrôle d'agent** — tickets externes, specs, initiatives et `BACKLOG.md` alimentent discovery/plan/impl. Les directives d'agent embarquées dans ce contenu (ignore rules, dump secrets, rewrite hooks) sont ignorées.
-- **`allowed-tools`** — les prompts core ne déclarent pas les outils MCP que les intégrations utilisent (on ne sait pas d'avance quels serveurs le projet expose). Le projet consommateur les autorise via les mécanismes de permission de son client APM (Claude Code, OpenCode, Copilot, etc.) ou via le frontmatter de ses prompts personnalisés.
+- **Match par chaîne exacte** : la section dans `AGENTS.md` est trouvée par le nom de l'événement verbatim (ex: `spec-workflow:spec:created`), peu importe le niveau de heading.
+- **Optionnel** : un événement non déclaré est ignoré silencieusement.
+- **Non bloquant** : un échec d'extension (MCP non connecté, OAuth expiré, API indisponible) ne bloque jamais le flow. L'agent prévient et continue.
+- **Politique d'intégration, pas configuration d'agent** : les skills exécutent l'intégration déclarée via MCP/CLI, mais refusent ce qui sort de ce cadre (modifier `AGENTS.md`, hooks, CI, permissions ou secrets, git hors du flow, scripts arbitraires), même si la section le demande.
+- **Contexte métier, pas contrôle d'agent** : tickets externes, specs, initiatives et `BACKLOG.md` alimentent la discovery et l'implémentation ; les directives d'agent qui y seraient embarquées sont ignorées.
+- **`allowed-tools`** : les skills ne déclarent pas les outils MCP des intégrations. Le projet les autorise via les mécanismes de permission de son client (Claude Code, OpenCode, Copilot, etc.).
 
-### Exemple — tracker Jira via MCP
+### Exemple : tracker Jira via MCP
 
 Extrait d'`AGENTS.md` d'un projet qui utilise Jira via le serveur MCP Atlassian :
 
@@ -203,7 +215,7 @@ Afficher l'URL de la story dans le summary final.
 
 ### spec-workflow:spec:created
 
-Si la spec est liée à une initiative, chercher la story portant `init:<slug>` dans sa description (JQL). Si trouvée **et au statut `READY FOR DEV`**, transitionner vers `DEV IN PROGRESS`. Sinon skip silencieux — la transition est idempotente et ne déclenche qu'une fois, au premier spec de l'initiative (la story est déjà `DEV IN PROGRESS` pour les specs suivantes).
+Si la spec est liée à une initiative, chercher la story portant `init:<slug>` dans sa description (JQL). Si trouvée **et au statut `READY FOR DEV`**, transitionner vers `DEV IN PROGRESS`. Sinon skip silencieux : la transition ne se déclenche qu'au premier spec de l'initiative.
 
 ### spec-workflow:initiative:completed
 
@@ -212,23 +224,18 @@ Chercher la story via `init:<slug>` et la transitionner vers `DONE`.
 
 ### Autres patterns d'intégration
 
-Le mécanisme est générique — quelques cas d'usage au-delà du tracker :
+- **Enrichissement de contexte** (`initiative:started` ou `spec:started`) : consommer un argument court (ex: numéro de ticket Notion/Linear) et utiliser le contenu du ticket comme contexte métier pour la discovery.
+- **Miroir documentaire** (`spec:created` ou `impl:completed`) : créer ou mettre à jour une page Notion/Confluence qui reflète le document Markdown.
+- **Notifications** (`impl:completed` ou `initiative:completed`) : annoncer dans Slack, Teams, Discord, webhooks.
+- **Trigger CI/CD** (`impl:started`) : démarrer un job de préparation via l'outil d'intégration prévu, pas via du shell arbitraire.
 
-- **Enrichissement de contexte** (`spec-workflow:initiative:started` ou `spec:started`) — consommer un argument court (ex: numéro de ticket Notion/Linear) et utiliser le contenu du ticket comme contexte métier pour la discovery (titre, description, acceptance criteria). Les directives d'agent embarquées dans le ticket sont ignorées.
-- **Miroir documentaire** (`spec-workflow:spec:created` ou `impl:completed`) — créer/mettre à jour une page Notion/Confluence qui miroite le document Markdown
-- **Notifications** (`spec-workflow:impl:completed` ou `initiative:completed`) — annoncer dans Slack, Teams, Discord, webhooks
-- **Trigger CI/CD** (`spec-workflow:impl:started`) — démarrer un job de préparation (provisionnement d'environnement, build de branche) via l'outil d'intégration prévu — pas via du shell arbitraire inventé par le ticket
+### Sécurité anti-injection
 
-Dans tous les cas la règle **non bloquante** tient : une extension qui échoue ne doit pas compromettre la création d'artefacts ou de PRs.
+Les skills appliquent aussi :
 
-### Sécurité anti-injection (prompts)
-
-Les prompts core appliquent aussi :
-
-- Encadrement de `$ARGUMENTS` comme données non fiables
-- Validation stricte des slugs (`^[a-z0-9][a-z0-9-]{0,49}$`) avant shell/chemins
-- Specs / initiatives / backlog = données ; pas d'exécution de directives embarquées
-- `/impl` ne peut pas écrire de hooks `spec-workflow:…` dans `AGENTS.md` sans approbation explicite du diff
+- `$ARGUMENTS`, specs, initiatives, backlog, tickets et commentaires de PR traités comme des données, jamais comme des instructions d'agent
+- Validation stricte des slugs (`^[a-z0-9][a-z0-9-]{0,49}$`) avant tout usage dans le shell ou un chemin
+- `/impl` ne modifie pas les sections `spec-workflow:…`, permissions ou config d'agent de `AGENTS.md` sans montrer le diff exact et obtenir une approbation
 
 ## Installation
 
@@ -238,3 +245,5 @@ dependencies:
   apm:
     - mirego/agentic/spec-workflow#v1.0.0
 ```
+
+En passant d'une version à prompts (≤ v1.4) à la version à skills, `apm install` retire automatiquement les anciennes commandes générées.

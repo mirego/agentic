@@ -56,8 +56,8 @@ Pipeline structuré pour passer d'une vision produit à une implémentation livr
 |----------|-------------|
 | `/spec-workflow` | Dashboard du pipeline : état, prochaine action, routage intelligent |
 | `/initiative` | Créer une initiative produit (vision, personas, user stories, découpage en specs) |
-| `/spec` | Créer une spécification technique (discussion → spec → PR) |
-| `/impl` | Implémenter une spec à partir d'un slug de spec |
+| `/spec` | Planifier un changement et produire une spec reviewable (discussion → spec → PR) |
+| `/impl` | Implémenter une spec, la reprendre ou traiter les commentaires de review |
 
 ```
 /spec-workflow  ←  porte d'entrée : dashboard + routage
@@ -72,9 +72,9 @@ Pipeline structuré pour passer d'une vision produit à une implémentation livr
                                       └── /impl <slug>  →  PR d'impl (draft)
 ```
 
-`/spec-workflow` est la porte d'entrée du pipeline : `status` pour voir l'état, `next` pour la prochaine action suggérée, `start <desc>` pour router vers le bon prompt selon le scope.
+`/spec-workflow` est la porte d'entrée du pipeline : `status` pour voir l'état, `next` pour la prochaine action suggérée, `start <desc>` pour router vers le bon skill selon le scope.
 
-Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative. `/spec` propose aussi un mode **fast-track** qui enchaîne directement avec `/impl` sur une seule PR combinée (recommandé en solo).
+Pour les changements techniques (RFC) ou petits changements (Libre), le pipeline peut démarrer directement à `/spec` sans initiative. `/spec` propose aussi un mode **fast-track** qui enchaîne directement avec `/impl` sur une seule PR combinée, selon la politique de review du projet.
 
 Voir le [README du package](spec-workflow/README.md) pour les prérequis, les templates et la documentation complète.
 
